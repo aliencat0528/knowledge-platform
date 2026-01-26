@@ -102,6 +102,66 @@ python scripts/embed_all.py
 
 ---
 
+## Phase 直線化開發規則
+
+本專案採用 **Phase 直線化開發**，確保每個階段穩定後才進入下一階段。
+
+### 核心規則
+
+```
+1. 同一 Phase 內的分支可並行開發
+2. 該 Phase 所有 PR 必須 merge 完成後，才能開始下一 Phase
+3. 每個 Phase 結束時，main 分支必須是穩定可用的狀態
+```
+
+### 開發流程圖
+
+```
+main ─────────────────────────────────────────────────────────►
+        │                           │                     │
+        │ Phase 1a                  │ Phase 1b            │ Phase 2
+        ├── backend-core ──► PR ────┤                     │
+        │                    merge  │                     │
+        └── extension-core ► PR ────┤                     │
+                             merge  │                     │
+                                    ├── notion-parser ► PR ┤
+                                    │                merge │
+                                    └── notion-ext ──► PR ─┤
+                                                    merge  │
+                                                           ├── ...
+```
+
+### 分支命名規則
+
+| Phase | 分支群組 | 命名格式 |
+|-------|----------|----------|
+| 1a | 後端核心 | `feature/backend-core-sec` |
+| 1a | 擴充套件核心 | `feature/extension-core-third` |
+| 1b | Notion 解析 | `feature/notion-parser-fourth` |
+| 1b | Notion 擴充 | `feature/notion-extension-fifth` |
+| 2 | 批量匯入 | `feature/batch-import-sixth` |
+| ... | ... | ... |
+
+> 完整對應表請參考 `.speckit/plans/technical-plan.md`
+
+### Phase 完成檢查清單
+
+開始下一 Phase 前，確認：
+
+- [ ] 該 Phase 所有 PR 已 merge 到 main
+- [ ] main 分支可正常運行
+- [ ] 該 Phase 的完成條件全部達成（見 `.speckit/tasks/`）
+- [ ] 相關文件已更新（README、docs/）
+
+### 指令
+
+| 指令 | 說明 |
+|------|------|
+| `開始 Phase X` | Claude 檢查前一 Phase 是否完成，若完成則建立新分支 |
+| `Phase 狀態` | 顯示當前 Phase 進度和待完成項目 |
+
+---
+
 ## 觸發詞與文件更新
 
 當這些關鍵詞出現時，檢查是否需要更新相關文件：
