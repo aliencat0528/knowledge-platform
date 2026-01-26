@@ -479,9 +479,12 @@ Claude 可自行評估並安裝以下類型的工具：
 fix/<bug-description>-<version>
 
 範例：
-- fix/popup-crash-sec
-- fix/api-timeout-third
+- fix/popup-crash-first     ← 第 1 個 fix（獨立計數）
+- fix/api-timeout-sec       ← 第 2 個 fix（獨立計數）
 ```
+
+> ⚠️ fix 版本號從 `first` 開始，與 feature 的 Phase 序列**完全獨立**。
+> 參見「版本號分離規則」section。
 
 #### 注意事項
 
