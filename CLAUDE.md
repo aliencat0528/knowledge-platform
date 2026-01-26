@@ -177,6 +177,86 @@ main ─────────────────────────
 
 ---
 
+## 強制文檔檢查（Commit 前自動執行）
+
+> **Claude 必須在每次 commit 前主動執行以下檢查，不需用戶提醒**
+
+### Commit 前檢查清單
+
+```
+每次 commit 前，Claude 必須自問：
+
+□ 是否新增/修改了功能？
+  → 更新 README.md 相關 section
+  → 更新 CHANGELOG.md（如適用）
+
+□ 是否新增/刪除了檔案或模組？
+  → 更新 docs/ARCHITECTURE.md 模組圖
+  → 更新 README.md 專案結構
+
+□ 是否修改了 API？
+  → 更新 docs/API.md（如存在）
+  → 更新 README.md API section
+
+□ 是否新增了依賴？
+  → 更新 requirements.txt 或 package.json
+  → 更新 README.md 安裝說明
+
+□ 是否為重要里程碑？
+  → 更新 CHANGELOG.md
+```
+
+### 違反處理
+
+如果 Claude 漏掉文檔更新：
+1. 用戶提醒後，立即補上
+2. 在下次 commit 中加入文檔更新
+3. 不需要 amend 之前的 commit（除非用戶要求）
+
+---
+
+## 版本歷史追蹤
+
+### CHANGELOG.md 規則
+
+本專案使用 [Keep a Changelog](https://keepachangelog.com/) 格式：
+
+```markdown
+# Changelog
+
+## [Unreleased]
+### Added
+- 新功能描述
+
+### Changed
+- 修改描述
+
+### Fixed
+- 修復描述
+
+## [0.1.0] - 2026-01-26
+### Added
+- 初始版本功能
+```
+
+### 更新時機
+
+| 事件 | 行為 |
+|------|------|
+| 完成一個 Task | 在 `[Unreleased]` 加入條目 |
+| PR merge 到 main | 保持在 `[Unreleased]` |
+| 發布版本 | 將 `[Unreleased]` 改為版本號 + 日期 |
+
+### README 版本顯示
+
+README.md 頂部應顯示當前版本：
+
+```markdown
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
+```
+
+---
+
 ## 測試要求
 
 ```bash
