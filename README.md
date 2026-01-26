@@ -2,6 +2,7 @@
 
 > 個人知識管理平台 - 整合多種來源的技術文章與筆記
 
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -49,16 +50,14 @@ uvicorn main:app --reload
 ### 安裝擴充套件
 
 ```bash
-# 1. 建置擴充套件
-cd packages/extension
-npm install
-npm run build
+# 在 Chrome 載入擴充套件
+# 1. 打開 chrome://extensions/
+# 2. 啟用「開發人員模式」
+# 3. 點擊「載入未封裝項目」
+# 4. 選擇 packages/extension 目錄
 
-# 2. 在 Chrome 載入
-# - 打開 chrome://extensions/
-# - 啟用「開發人員模式」
-# - 點擊「載入未封裝項目」
-# - 選擇 packages/extension/dist 目錄
+# 目前擴充套件為純 JavaScript，無需 build 步驟
+# 直接載入源碼目錄即可
 ```
 
 ---
@@ -175,6 +174,31 @@ pytest tests/
 - [ ] Phase 2: 資料收集（批量 + .zip + 去重）
 - [ ] Phase 3: 智慧搜尋（向量化 + Notion 同步）
 - [ ] Phase 4: 完整體驗（Chat + Web UI）
+
+---
+
+## 版本歷史
+
+### v0.2.0 (開發中)
+- **Chrome 擴充套件核心**
+  - Manifest V3 設定
+  - Popup UI 與伺服器狀態指示
+  - 內容提取（Readability.js + Turndown.js）
+  - Notion 頁面偵測與 ID 提取
+  - Service Worker 背景服務
+
+### v0.1.0 (2026-01-26)
+- **專案初始化**
+  - Python FastAPI 後端服務
+  - SQLite 資料庫層（含 article_hierarchy）
+  - Pydantic 資料模型
+  - Generic Parser 基礎實作
+  - Import Service（含去重邏輯）
+  - Articles API 端點
+  - Spec Kit 規格文件
+  - 專案文件（README、ARCHITECTURE.md）
+
+> 完整變更記錄請參考 [CHANGELOG.md](CHANGELOG.md)
 
 ---
 

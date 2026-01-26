@@ -177,6 +177,86 @@ main ─────────────────────────
 
 ---
 
+## 強制文檔檢查（Commit 前自動執行）
+
+> **Claude 必須在每次 commit 前主動執行以下檢查，不需用戶提醒**
+
+### Commit 前檢查清單
+
+```
+每次 commit 前，Claude 必須自問：
+
+□ 是否新增/修改了功能？
+  → 更新 README.md 相關 section
+  → 更新 CHANGELOG.md（如適用）
+
+□ 是否新增/刪除了檔案或模組？
+  → 更新 docs/ARCHITECTURE.md 模組圖
+  → 更新 README.md 專案結構
+
+□ 是否修改了 API？
+  → 更新 docs/API.md（如存在）
+  → 更新 README.md API section
+
+□ 是否新增了依賴？
+  → 更新 requirements.txt 或 package.json
+  → 更新 README.md 安裝說明
+
+□ 是否為重要里程碑？
+  → 更新 CHANGELOG.md
+```
+
+### 違反處理
+
+如果 Claude 漏掉文檔更新：
+1. 用戶提醒後，立即補上
+2. 在下次 commit 中加入文檔更新
+3. 不需要 amend 之前的 commit（除非用戶要求）
+
+---
+
+## 版本歷史追蹤
+
+### CHANGELOG.md 規則
+
+本專案使用 [Keep a Changelog](https://keepachangelog.com/) 格式：
+
+```markdown
+# Changelog
+
+## [Unreleased]
+### Added
+- 新功能描述
+
+### Changed
+- 修改描述
+
+### Fixed
+- 修復描述
+
+## [0.1.0] - 2026-01-26
+### Added
+- 初始版本功能
+```
+
+### 更新時機
+
+| 事件 | 行為 |
+|------|------|
+| 完成一個 Task | 在 `[Unreleased]` 加入條目 |
+| PR merge 到 main | 保持在 `[Unreleased]` |
+| 發布版本 | 將 `[Unreleased]` 改為版本號 + 日期 |
+
+### README 版本顯示
+
+README.md 頂部應顯示當前版本：
+
+```markdown
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
+```
+
+---
+
 ## 測試要求
 
 ```bash
@@ -222,3 +302,124 @@ NOTION_DATABASE_ID=...
 2. **敏感資料不要 commit**（.env, API keys）
 3. **遵循去重邏輯**：source_type + source_id 是唯一識別
 4. **保持 Parser 可擴展**：新增 Parser 不應影響其他模組
+
+---
+
+## 套件評估與安裝
+
+### 自動評估原則
+
+Claude 可自行評估並安裝以下類型的工具：
+
+| 類型 | 範例 | 行為 |
+|------|------|------|
+| **開發效率工具** | uv, ruff, black | 可直接安裝，commit 時說明 |
+| **專案已定義依賴** | requirements.txt 內的套件 | 直接安裝 |
+| **輔助工具** | pytest 插件, 型別檢查 | 可直接安裝 |
+
+### 需確認的情況
+
+| 類型 | 範例 | 行為 |
+|------|------|------|
+| **架構性依賴** | 新 ORM, 新框架 | 必須詢問 |
+| **付費服務 SDK** | AWS SDK, Stripe | 必須詢問 |
+| **大型依賴** | TensorFlow, PyTorch | 必須詢問 |
+
+### 推薦工具列表
+
+| 工具 | 用途 | 適用於 |
+|------|------|--------|
+| `uv` | 快速 Python 套件管理 | packages/server/ |
+| `ruff` | 快速 Python linter | packages/server/ |
+| `biome` | 快速 JS/TS linter | packages/extension/ |
+
+---
+
+## Bug 修復流程
+
+### 臨時中斷修 Bug
+
+當開發中發現需要緊急修復的 bug 時：
+
+#### 流程
+
+```
+1. 確認當前分支有無未 commit 的重要變更
+   ├── 有 → 先 commit 或 stash
+   └── 無 → 直接切換
+
+2. 從 main 建立修復分支
+   └── git checkout main && git checkout -b fix/<bug-name>-<version>
+
+3. 修復 bug → commit → push → PR
+
+4. PR merge 後，回到原分支
+   └── git checkout <original-branch>
+   └── git rebase main（取得修復）
+
+5. 繼續原本開發
+```
+
+#### 分支命名
+
+```
+fix/<bug-description>-<version>
+
+範例：
+- fix/popup-crash-sec
+- fix/api-timeout-third
+```
+
+#### 注意事項
+
+- Bug 修復分支應盡量小且專注
+- 不要在修復分支做功能開發
+- 修復完成後及時清理本地分支
+
+---
+
+## 程序中斷恢復
+
+### 中斷類型與處理
+
+| 中斷類型 | 恢復方式 |
+|----------|----------|
+| **對話中斷** | 新對話時說明「繼續上次開發」，Claude 會檢查 git status |
+| **網路中斷** | 重新連線後檢查最後操作是否完成 |
+| **編輯中斷** | 檢查檔案是否完整，必要時回滾 |
+
+### 恢復檢查清單
+
+新對話恢復開發時，Claude 應執行：
+
+```bash
+# 1. 檢查當前分支和狀態
+git branch --show-current
+git status
+
+# 2. 檢查最近 commits
+git log --oneline -5
+
+# 3. 檢查是否有 stash
+git stash list
+
+# 4. 檢查任務進度
+# 查看 .speckit/tasks/ 相關文件
+```
+
+### 狀態標記（可選）
+
+若需要長時間中斷，可在 commit message 加上標記：
+
+```
+feat(extension): WIP - popup UI 完成 50%
+
+[WIP] 標記表示此 commit 為進行中狀態
+下次繼續：完成 notion-detector 整合
+```
+
+### 安全原則
+
+- **不確定時詢問**：如果不清楚中斷前的狀態，先詢問用戶
+- **優先保留**：寧可多 commit 一個 WIP，也不要丟失進度
+- **檢查再行動**：恢復後先 `git status` 確認狀態再繼續
