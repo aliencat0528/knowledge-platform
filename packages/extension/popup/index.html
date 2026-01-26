@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knowledge Collector</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>📥 Knowledge Collector</h1>
+    </header>
+
+    <main class="main">
+      <!-- Page Info -->
+      <section class="page-info" id="pageInfo">
+        <div class="page-title" id="pageTitle">載入中...</div>
+        <div class="page-url" id="pageUrl"></div>
+        <div class="notion-badge" id="notionBadge" style="display: none;">
+          🔗 Notion 頁面
+        </div>
+      </section>
+
+      <!-- Tags Input -->
+      <section class="tags-section">
+        <label for="tagsInput">標籤</label>
+        <input type="text" id="tagsInput" placeholder="以逗號分隔，如：React, Hooks">
+      </section>
+
+      <!-- Action Buttons -->
+      <section class="actions">
+        <button class="btn btn-primary" id="saveBtn">
+          📄 收藏此頁面
+        </button>
+        <button class="btn btn-secondary" id="saveWithChildrenBtn" style="display: none;">
+          📂 收藏此頁 + 子頁面
+        </button>
+      </section>
+
+      <!-- Status Messages -->
+      <section class="status" id="status" style="display: none;">
+        <div class="status-icon" id="statusIcon"></div>
+        <div class="status-message" id="statusMessage"></div>
+      </section>
+
+      <!-- Progress (for batch/tree operations) -->
+      <section class="progress" id="progress" style="display: none;">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">0/0</div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="server-status">
+        <span class="status-dot" id="serverDot"></span>
+        <span id="serverStatus">檢查中...</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>
