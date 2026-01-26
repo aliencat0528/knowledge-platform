@@ -114,11 +114,122 @@ body {
   color: #aaa;
 }
 
+/* Sub-Pages Section */
+.subpages-section {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.subpages-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.subpages-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #333;
+}
+
+.subpages-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+.subpages-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 6px;
+}
+
+.subpages-loading {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+}
+
+.subpages-empty {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+}
+
+.subpage-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.15s;
+}
+
+.subpage-item:last-child {
+  border-bottom: none;
+}
+
+.subpage-item:hover {
+  background: #f8f9ff;
+}
+
+.subpage-item input[type="checkbox"] {
+  margin-right: 10px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.subpage-item label {
+  flex: 1;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subpages-count {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+  text-align: right;
+}
+
 /* Action Buttons */
 .actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.btn-outline {
+  background: white;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #ccc;
 }
 
 .btn {

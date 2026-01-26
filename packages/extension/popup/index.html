@@ -28,13 +28,31 @@
         <input type="text" id="tagsInput" placeholder="以逗號分隔，如：React, Hooks">
       </section>
 
+      <!-- Sub-Pages List (Notion only) -->
+      <section class="subpages-section" id="subpagesSection" style="display: none;">
+        <div class="subpages-header">
+          <span class="subpages-title">子頁面</span>
+          <div class="subpages-actions">
+            <button class="btn-link" id="selectAllBtn">全選</button>
+            <button class="btn-link" id="deselectAllBtn">取消全選</button>
+          </div>
+        </div>
+        <div class="subpages-list" id="subpagesList">
+          <div class="subpages-loading">掃描中...</div>
+        </div>
+        <div class="subpages-count" id="subpagesCount"></div>
+      </section>
+
       <!-- Action Buttons -->
       <section class="actions">
         <button class="btn btn-primary" id="saveBtn">
           📄 收藏此頁面
         </button>
         <button class="btn btn-secondary" id="saveWithChildrenBtn" style="display: none;">
-          📂 收藏此頁 + 子頁面
+          📂 收藏選中的頁面
+        </button>
+        <button class="btn btn-outline" id="cancelBtn" style="display: none;">
+          取消
         </button>
       </section>
 
