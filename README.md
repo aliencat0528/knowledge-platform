@@ -14,6 +14,8 @@
 - 📄 **一鍵收藏** - Chrome 擴充套件快速收藏當前網頁
 - 📁 **樹狀抓取** - 一次收藏 Notion 頁面及所有子頁面
 - 📑 **批量收藏** - 一次收藏所有開啟的分頁
+- 📦 **Zip 匯入** - 匯入 Notion Export .zip 檔案
+- 🤖 **AI 對話匯入** - 匯入 Claude Code、Cursor 等 AI 編輯器對話（開發中）
 - 🗂️ **智慧去重** - 自動偵測重複內容，追蹤版本變更
 - 🔍 **語意搜尋** - 用自然語言找到相關文章
 - 💬 **Chat 對話** - 與你的知識庫對話（RAG）
@@ -161,17 +163,20 @@ pytest tests/
 
 主要端點：
 - `POST /api/v1/articles` - 新增文章
+- `POST /api/v1/articles/batch` - 批量新增
 - `GET /api/v1/articles` - 列出文章
+- `POST /api/v1/import/zip` - 匯入 Notion Export .zip
+- `POST /api/v1/import/chat` - 匯入 AI 對話（開發中）
 - `GET /api/v1/search` - 關鍵字搜尋
-- `POST /api/v1/search/semantic` - 語意搜尋
-- `POST /api/v1/chat` - Chat 對話
+- `POST /api/v1/search/semantic` - 語意搜尋（Phase 3）
+- `POST /api/v1/chat` - Chat 對話（Phase 4）
 
 ---
 
 ## 開發階段
 
-- [x] Phase 1: 核心基礎（單頁收藏 + SQLite）
-- [ ] Phase 2: 資料收集（批量 + .zip + 去重）
+- [x] Phase 1: 核心基礎（單頁收藏 + Notion 樹狀抓取）
+- [ ] Phase 2: 資料收集（批量 + .zip + AI 對話匯入 + 關鍵字搜尋）
 - [ ] Phase 3: 智慧搜尋（向量化 + Notion 同步）
 - [ ] Phase 4: 完整體驗（Chat + Web UI）
 

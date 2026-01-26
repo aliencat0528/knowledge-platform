@@ -20,6 +20,7 @@ flowchart TB
         A1["POST /articles"]
         A2["POST /articles/batch"]
         A3["POST /import/zip"]
+        A3b["POST /import/chat"]
         A4["GET /search"]
         A5["POST /search/semantic"]
         A6["POST /chat"]
@@ -175,6 +176,8 @@ graph TB
         subgraph Services["services/"]
             parse_svc["parse_service.py"]
             import_svc["import_service.py"]
+            zip_import_svc["zip_import_service.py"]
+            chat_import_svc["chat_import_service.py"]
             search_svc["search_service.py"]
             embed_svc["embed_service.py"]
             chat_svc["chat_service.py"]
@@ -293,8 +296,8 @@ erDiagram
 
 | 欄位 | 說明 |
 |------|------|
-| `source_type` | 來源類型：notion / medium / docs / web |
-| `source_id` | 來源唯一識別碼（URL hash 或頁面 ID） |
+| `source_type` | 來源類型：notion / medium / docs / web / claude-code / cursor |
+| `source_id` | 來源唯一識別碼（URL hash 或頁面 ID 或對話 ID） |
 | `content_hash` | 內容的 MD5 hash，用於偵測變更 |
 | `is_embedded` | 是否已向量化 |
 | `version` | 版本號，每次更新 +1 |
