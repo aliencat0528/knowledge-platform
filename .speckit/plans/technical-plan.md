@@ -396,6 +396,69 @@ GET    /api/v1/stats                 # 統計資訊
 ✅ 排程自動抓取
 ```
 
+### 4.5 分支規劃對應表
+
+本專案採用 **Phase 直線化開發**，每個 Phase 完成後才能開始下一個。
+
+#### Phase 1a → Phase 1b → Phase 2 → Phase 3 → Phase 4
+
+| Phase | 分支名稱 | 包含任務 | 預估時間 |
+|-------|----------|----------|----------|
+| **1a** | `feature/backend-core-sec` | 1a.1~1a.6（專案初始化到 FastAPI） | ~6 hr |
+| **1a** | `feature/extension-core-third` | 1a.7~1a.10（擴充套件骨架到錯誤處理） | ~4 hr |
+| **1b** | `feature/notion-parser-fourth` | 1b.1~1b.2（NotionParser + 樹狀 API） | ~2.5 hr |
+| **1b** | `feature/notion-extension-fifth` | 1b.3~1b.7（子頁面掃描到整合測試） | ~5.5 hr |
+| **2** | `feature/batch-import-sixth` | 2.1~2.5（批量分頁 + .zip 匯入） | ~6 hr |
+| **2** | `feature/parsers-search-seventh` | 2.6~2.10（其他 Parser + 搜尋） | ~6 hr |
+| **3** | `feature/vector-search-eighth` | 3.1~3.5（ChromaDB + 語意搜尋） | ~8 hr |
+| **3** | `feature/notion-sync-ninth` | 3.6~3.10（Notion 同步 + 認證） | ~7 hr |
+| **4** | `feature/chat-rag-tenth` | 4.1~4.4（RAG + Chat API） | ~8 hr |
+| **4** | `feature/scheduler-eleventh` | 4.5~4.6（排程爬取） | ~4 hr |
+| **4** | `feature/web-ui-twelfth` | 4.7~4.12（Web UI + 整合測試） | ~8 hr |
+
+#### 開發流程
+
+```
+                    Phase 1a 完成
+                         │
+main ────┬───────────────┼───────────────┬───────────────┬────────►
+         │               │               │               │
+         ├─ backend-core ┤               │               │
+         │    (PR #2)    │               │               │
+         │               │               │               │
+         └─ extension-core               │               │
+              (PR #3)    │               │               │
+                         │               │               │
+                    Phase 1b 開始        │               │
+                         │               │               │
+                         ├─ notion-parser                │
+                         │    (PR #4)    │               │
+                         │               │               │
+                         └─ notion-ext ──┤               │
+                              (PR #5)    │               │
+                                         │               │
+                                    Phase 2 開始         │
+                                         │               │
+                                         ├─ batch-import │
+                                         │    (PR #6)    │
+                                         │               │
+                                         └─ parsers ─────┤
+                                              (PR #7)    │
+                                                         │
+                                                    Phase 3 開始
+                                                         ...
+```
+
+#### 分支開始條件
+
+| 要開始的 Phase | 前置條件 |
+|----------------|----------|
+| Phase 1a | 無（可直接開始） |
+| Phase 1b | Phase 1a 所有 PR 已 merge |
+| Phase 2 | Phase 1b 所有 PR 已 merge |
+| Phase 3 | Phase 2 所有 PR 已 merge |
+| Phase 4 | Phase 3 所有 PR 已 merge |
+
 ---
 
 ## 5. 設定管理
