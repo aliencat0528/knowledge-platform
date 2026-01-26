@@ -144,6 +144,31 @@ main ─────────────────────────
 
 > 完整對應表請參考 `.speckit/plans/technical-plan.md`
 
+### 版本號分離規則
+
+**重要**：不同 branch type 使用**獨立的版本計數器**，避免互相干擾。
+
+| Type | 版本計數器 | 說明 |
+|------|-----------|------|
+| `feature/` | Phase 序列 | `sec → third → fourth → ...`，追蹤 Phase 開發順序 |
+| `fix/` | 獨立序列 | `first → sec → third → ...`，從 first 開始 |
+| `docs/` | 獨立序列 | `first → sec → third → ...`，從 first 開始 |
+| `chore/` | 獨立序列 | `first → sec → third → ...`，從 first 開始 |
+
+**範例**：
+```
+feature/ai-chat-import-seventh   ← Phase 2 第 7 個 feature
+feature/vector-search-eighth     ← Phase 3 第 8 個 feature（保留）
+fix/popup-crash-first            ← 第 1 個 fix
+fix/api-timeout-sec              ← 第 2 個 fix
+docs/phase2-status-first         ← 第 1 個 docs
+```
+
+**原因**：
+- `feature/` 版本號與 Phase 直線化開發綁定，用於追蹤功能開發進度
+- `fix/`、`docs/`、`chore/` 是臨時性或輔助性分支，不應佔用 Phase 序列
+- 分離計數器確保 Phase 規劃不受非功能分支干擾
+
 ### Phase 完成檢查清單
 
 開始下一 Phase 前，確認：
@@ -288,6 +313,10 @@ sqlite3 data/knowledge.db "SELECT id, title FROM articles LIMIT 10"
 
 □ 是否為重要里程碑？
   → 更新 CHANGELOG.md
+
+□ 是否完成了某個 Task？
+  → 更新 `.speckit/tasks/` 對應狀態（📋 → ✅）
+  → 確認 Task 輸出檔案都已建立
 ```
 
 ### 違反處理
@@ -450,9 +479,12 @@ Claude 可自行評估並安裝以下類型的工具：
 fix/<bug-description>-<version>
 
 範例：
-- fix/popup-crash-sec
-- fix/api-timeout-third
+- fix/popup-crash-first     ← 第 1 個 fix（獨立計數）
+- fix/api-timeout-sec       ← 第 2 個 fix（獨立計數）
 ```
+
+> ⚠️ fix 版本號從 `first` 開始，與 feature 的 Phase 序列**完全獨立**。
+> 參見「版本號分離規則」section。
 
 #### 注意事項
 
