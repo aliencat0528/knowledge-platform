@@ -144,6 +144,31 @@ main ─────────────────────────
 
 > 完整對應表請參考 `.speckit/plans/technical-plan.md`
 
+### 版本號分離規則
+
+**重要**：不同 branch type 使用**獨立的版本計數器**，避免互相干擾。
+
+| Type | 版本計數器 | 說明 |
+|------|-----------|------|
+| `feature/` | Phase 序列 | `sec → third → fourth → ...`，追蹤 Phase 開發順序 |
+| `fix/` | 獨立序列 | `first → sec → third → ...`，從 first 開始 |
+| `docs/` | 獨立序列 | `first → sec → third → ...`，從 first 開始 |
+| `chore/` | 獨立序列 | `first → sec → third → ...`，從 first 開始 |
+
+**範例**：
+```
+feature/ai-chat-import-seventh   ← Phase 2 第 7 個 feature
+feature/vector-search-eighth     ← Phase 3 第 8 個 feature（保留）
+fix/popup-crash-first            ← 第 1 個 fix
+fix/api-timeout-sec              ← 第 2 個 fix
+docs/phase2-status-first         ← 第 1 個 docs
+```
+
+**原因**：
+- `feature/` 版本號與 Phase 直線化開發綁定，用於追蹤功能開發進度
+- `fix/`、`docs/`、`chore/` 是臨時性或輔助性分支，不應佔用 Phase 序列
+- 分離計數器確保 Phase 規劃不受非功能分支干擾
+
 ### Phase 完成檢查清單
 
 開始下一 Phase 前，確認：
