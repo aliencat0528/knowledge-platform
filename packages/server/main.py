@@ -2,10 +2,18 @@
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
 
 from .config import settings
+from .storage.database import init_db, close_db, get_db
+from .api.articles import router as articles_router
+from .api.errors import (
+    http_exception_handler,
+    validation_exception_handler,
+    general_exception_handler,
+)
 
 
 @asynccontextmanager
@@ -13,11 +21,14 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     # Startup
     settings.ensure_data_dir()
+    await init_db()
     print(f"Starting Knowledge Platform Server v0.1.0")
     print(f"Database: {settings.database_path}")
     print(f"Debug mode: {settings.debug}")
+    print(f"API docs: http://{settings.host}:{settings.port}/docs")
     yield
     # Shutdown
+    await close_db()
     print("Shutting down...")
 
 
@@ -30,6 +41,11 @@ app = FastAPI(
     openapi_url="/openapi.json",
     lifespan=lifespan,
 )
+
+# Exception handlers
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(ValidationError, validation_exception_handler)
+app.add_exception_handler(Exception, general_exception_handler)
 
 # CORS middleware for extension
 app.add_middleware(
@@ -44,6 +60,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include routers
+app.include_router(articles_router, prefix="/api/v1")
+
 
 @app.get("/api/v1/health", tags=["System"])
 async def health_check():
@@ -54,11 +73,17 @@ async def health_check():
 @app.get("/api/v1/stats", tags=["System"])
 async def get_stats():
     """Get system statistics."""
-    # TODO: Implement actual stats from database
+    db = await get_db()
+
+    # Get article counts
+    result = await db.fetchone(
+        "SELECT COUNT(*) as total, SUM(CASE WHEN is_embedded THEN 1 ELSE 0 END) as embedded FROM articles"
+    )
+
     return {
         "status": "ok",
-        "articles_count": 0,
-        "embedded_count": 0,
+        "articles_count": result["total"] if result else 0,
+        "embedded_count": result["embedded"] if result else 0,
         "database_path": settings.database_path,
     }
 
