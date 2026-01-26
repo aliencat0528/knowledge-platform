@@ -180,10 +180,10 @@ pytest tests/
 ## 版本歷史
 
 ### v0.2.0 (開發中)
-- **Notion Parser（Phase 1b）**
+- **Notion 樹狀抓取（Phase 1b 完成）**
   - Notion 頁面 HTML 解析
-  - 子頁面連結提取
-  - 支援特殊區塊（Toggle, Callout, Code）
+  - 子頁面掃描與選擇 UI
+  - 樹狀抓取與進度顯示
   - 樹狀匯入 API（父子關係儲存）
 - **Chrome 擴充套件核心（Phase 1a）**
   - Manifest V3 設定

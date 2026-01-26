@@ -36,6 +36,11 @@
       "matches": ["<all_urls>"],
       "js": ["lib/readability.min.js", "lib/turndown.min.js", "content/extractor.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.notion.so/*", "*://*.notion.site/*"],
+      "js": ["content/notion-scanner.js"],
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
