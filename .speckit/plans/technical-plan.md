@@ -127,6 +127,8 @@ knowledge-platform/
 │   │   │   ├── __init__.py
 │   │   │   ├── parse_service.py        # 內容解析
 │   │   │   ├── import_service.py       # 匯入 + 去重
+│   │   │   ├── zip_import_service.py   # Notion .zip 匯入
+│   │   │   ├── chat_import_service.py  # AI 對話匯入
 │   │   │   ├── search_service.py       # 搜尋邏輯
 │   │   │   ├── embed_service.py        # 向量化
 │   │   │   ├── chat_service.py         # RAG + LLM
@@ -154,6 +156,7 @@ knowledge-platform/
 │
 ├── scripts/
 │   ├── import_zip.py                   # .zip 匯入腳本
+│   ├── import_chat.py                  # AI 對話匯入腳本
 │   ├── embed_all.py                    # 批量向量化
 │   └── setup_db.py                     # 初始化資料庫
 │
@@ -229,6 +232,7 @@ DELETE /api/v1/articles/{id}         # 刪除文章
 # 批量操作
 POST   /api/v1/articles/batch        # 批量新增
 POST   /api/v1/import/zip            # 匯入 .zip
+POST   /api/v1/import/chat           # 匯入 AI 對話（Claude Code, Cursor 等）
 
 # 搜尋
 GET    /api/v1/search                # 關鍵字搜尋
@@ -336,20 +340,19 @@ GET    /api/v1/stats                 # 統計資訊
 任務：
 ├── 後端
 │   ├── 實作 .zip 匯入
-│   ├── 實作 NotionParser
-│   ├── 實作版本追蹤
-│   └── 實作關鍵字搜尋
+│   ├── 實作關鍵字搜尋
+│   ├── 實作 AI 對話匯入（Claude Code, Cursor, Windsurf）
+│   └── 實作版本追蹤
 │
 └── 擴充套件
     ├── 實作批量分頁抓取
-    ├── 實作樹狀抓取
     └── 實作進度顯示
 
 驗收：
-✅ 可匯入 Notion Export
+✅ 可匯入 Notion Export (.zip)
 ✅ 可批量收藏分頁
-✅ 可樹狀抓取 Notion
 ✅ 可用關鍵字搜尋
+✅ 可匯入 AI 編輯器對話（JSONL, SQLite, Markdown）
 ```
 
 ### Phase 3: 智慧搜尋（Week 5-6）
@@ -402,19 +405,19 @@ GET    /api/v1/stats                 # 統計資訊
 
 #### Phase 1a → Phase 1b → Phase 2 → Phase 3 → Phase 4
 
-| Phase | 分支名稱 | 包含任務 | 預估時間 |
-|-------|----------|----------|----------|
-| **1a** | `feature/backend-core-sec` | 1a.1~1a.6（專案初始化到 FastAPI） | ~6 hr |
-| **1a** | `feature/extension-core-third` | 1a.7~1a.10（擴充套件骨架到錯誤處理） | ~4 hr |
-| **1b** | `feature/notion-parser-fourth` | 1b.1~1b.2（NotionParser + 樹狀 API） | ~2.5 hr |
-| **1b** | `feature/notion-extension-fifth` | 1b.3~1b.7（子頁面掃描到整合測試） | ~5.5 hr |
-| **2** | `feature/batch-import-sixth` | 2.1~2.5（批量分頁 + .zip 匯入） | ~6 hr |
-| **2** | `feature/parsers-search-seventh` | 2.6~2.10（其他 Parser + 搜尋） | ~6 hr |
-| **3** | `feature/vector-search-eighth` | 3.1~3.5（ChromaDB + 語意搜尋） | ~8 hr |
-| **3** | `feature/notion-sync-ninth` | 3.6~3.10（Notion 同步 + 認證） | ~7 hr |
-| **4** | `feature/chat-rag-tenth` | 4.1~4.4（RAG + Chat API） | ~8 hr |
-| **4** | `feature/scheduler-eleventh` | 4.5~4.6（排程爬取） | ~4 hr |
-| **4** | `feature/web-ui-twelfth` | 4.7~4.12（Web UI + 整合測試） | ~8 hr |
+| Phase | 分支名稱 | 包含任務 | 預估時間 | 狀態 |
+|-------|----------|----------|----------|------|
+| **1a** | `feature/backend-core-sec` | 1a.1~1a.6（專案初始化到 FastAPI） | ~6 hr | ✅ 完成 |
+| **1a** | `feature/extension-core-third` | 1a.7~1a.10（擴充套件骨架到錯誤處理） | ~4 hr | ✅ 完成 |
+| **1b** | `feature/notion-parser-fourth` | 1b.1~1b.2（NotionParser + 樹狀 API） | ~2.5 hr | ✅ 完成 |
+| **1b** | `feature/notion-extension-fifth` | 1b.3~1b.7（子頁面掃描到整合測試） | ~5.5 hr | ✅ 完成 |
+| **2** | `feature/batch-import-sixth` | 2.1~2.4（批量分頁 + .zip 匯入 + 搜尋） | ~6 hr | ✅ 完成 |
+| **2** | `feature/ai-chat-import-seventh` | 2.5~2.7（AI 對話匯入：Claude Code, Cursor） | ~4 hr | 📋 待開始 |
+| **3** | `feature/vector-search-eighth` | 3.1~3.5（ChromaDB + 語意搜尋） | ~8 hr | 📋 待開始 |
+| **3** | `feature/notion-sync-ninth` | 3.6~3.10（Notion 同步 + 認證） | ~7 hr | 📋 待開始 |
+| **4** | `feature/chat-rag-tenth` | 4.1~4.4（RAG + Chat API） | ~8 hr | 📋 待開始 |
+| **4** | `feature/scheduler-eleventh` | 4.5~4.6（排程爬取） | ~4 hr | 📋 待開始 |
+| **4** | `feature/web-ui-twelfth` | 4.7~4.12（Web UI + 整合測試） | ~8 hr | 📋 待開始 |
 
 #### 開發流程
 
