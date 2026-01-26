@@ -12,9 +12,9 @@
 | 2.2 | .zip 匯入 API | `feature/batch-import-sixth` | ✅ 完成 |
 | 2.3 | 擴充套件批量分頁 | `feature/batch-import-sixth` | ✅ 完成 |
 | 2.4 | 關鍵字搜尋 API | `feature/batch-import-sixth` | ✅ 完成 |
-| 2.5 | AI 對話匯入服務 | `feature/ai-chat-import-seventh` | 📋 待開始 |
-| 2.6 | AI 對話匯入 API | `feature/ai-chat-import-seventh` | 📋 待開始 |
-| 2.7 | AI 對話匯入 CLI | `feature/ai-chat-import-seventh` | 📋 待開始 |
+| 2.5 | AI 對話匯入服務 | `feature/ai-chat-import-seventh` | ✅ 完成 |
+| 2.6 | AI 對話匯入 API | `feature/ai-chat-import-seventh` | ✅ 完成 |
+| 2.7 | AI 對話匯入 CLI | `feature/ai-chat-import-seventh` | ✅ 完成 |
 
 ---
 
@@ -84,9 +84,9 @@
 
 ---
 
-# 待開發任務（PR #9）
+# 已完成任務（PR #9）
 
-## Task 2.5: AI 對話匯入服務
+## Task 2.5: AI 對話匯入服務 ✅
 
 ### 描述
 實作多種 AI 編輯器對話的匯入服務
@@ -153,7 +153,7 @@ python scripts/import_chat.py ~/Library/Application\ Support/Cursor/ --format cu
 
 ---
 
-## Task 2.6: AI 對話匯入 API
+## Task 2.6: AI 對話匯入 API ✅
 
 ### 描述
 提供 AI 對話匯入的 API 端點
@@ -192,7 +192,7 @@ Content-Type: application/json
 
 ---
 
-## Task 2.7: AI 對話匯入 CLI
+## Task 2.7: AI 對話匯入 CLI ✅
 
 ### 描述
 提供命令列工具批量匯入 AI 對話
@@ -248,7 +248,7 @@ python scripts/import_chat.py --clipboard
 | 2.2 .zip 匯入 API | 1 hr ✅ |
 | 2.3 批量分頁 | 2 hr ✅ |
 | 2.4 關鍵字搜尋 | 1.5 hr ✅ |
-| 2.5 AI 對話服務 | 2 hr |
-| 2.6 AI 對話 API | 1 hr |
-| 2.7 AI 對話 CLI | 1 hr |
-| **Phase 2 合計** | **~10 小時** |
+| 2.5 AI 對話服務 | 2 hr ✅ |
+| 2.6 AI 對話 API | 1 hr ✅ |
+| 2.7 AI 對話 CLI | 1 hr ✅ |
+| **Phase 2 合計** | **~10 小時 ✅** |
