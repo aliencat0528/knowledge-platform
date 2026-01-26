@@ -180,7 +180,12 @@ pytest tests/
 ## 版本歷史
 
 ### v0.2.0 (開發中)
-- **Chrome 擴充套件核心**
+- **Notion Parser（Phase 1b）**
+  - Notion 頁面 HTML 解析
+  - 子頁面連結提取
+  - 支援特殊區塊（Toggle, Callout, Code）
+  - 樹狀匯入 API（父子關係儲存）
+- **Chrome 擴充套件核心（Phase 1a）**
   - Manifest V3 設定
   - Popup UI 與伺服器狀態指示
   - 內容提取（Readability.js + Turndown.js）

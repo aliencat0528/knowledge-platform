@@ -6,6 +6,14 @@
 ## [Unreleased]
 
 ### Added
+- Notion Parser (Task 1b.1)
+  - 解析 Notion 頁面 HTML 結構
+  - 提取子頁面連結
+  - 從 URL 提取頁面 ID
+  - 支援特殊區塊（Toggle, Callout, Code 等）
+- 樹狀匯入 API 驗證 (Task 1b.2)
+  - POST /articles/tree 端點測試通過
+  - 父子關係正確儲存於 article_hierarchy
 - Chrome 擴充套件核心功能 (Task 1a.7, 1a.8)
   - Manifest V3 設定
   - Popup UI 與伺服器狀態指示
