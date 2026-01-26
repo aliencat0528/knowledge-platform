@@ -6,6 +6,11 @@
 ## [Unreleased]
 
 ### Added
+- Notion 擴充套件子頁面功能 (Task 1b.3~1b.6)
+  - 子頁面掃描（notion-scanner.js）
+  - 樹狀選擇 UI（checkbox 列表、全選/取消）
+  - 樹狀抓取與進度顯示
+  - 取消按鈕支援
 - Notion Parser (Task 1b.1)
   - 解析 Notion 頁面 HTML 結構
   - 提取子頁面連結
