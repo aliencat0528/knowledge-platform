@@ -288,6 +288,10 @@ sqlite3 data/knowledge.db "SELECT id, title FROM articles LIMIT 10"
 
 □ 是否為重要里程碑？
   → 更新 CHANGELOG.md
+
+□ 是否完成了某個 Task？
+  → 更新 `.speckit/tasks/` 對應狀態（📋 → ✅）
+  → 確認 Task 輸出檔案都已建立
 ```
 
 ### 違反處理
