@@ -275,7 +275,7 @@ GET    /api/v1/stats                 # 統計資訊
 
 ## 4. 開發階段詳細
 
-### Phase 1: 核心基礎（Week 1-2）
+### Phase 1a: 核心基礎
 
 ```
 目標：可以透過擴充套件收藏單頁，存入本地
@@ -283,14 +283,15 @@ GET    /api/v1/stats                 # 統計資訊
 任務：
 ├── 後端
 │   ├── 設定 FastAPI 專案
-│   ├── 實作 SQLite 儲存層
+│   ├── 實作 SQLite 儲存層（含 article_hierarchy）
 │   ├── 實作 articles API
 │   ├── 實作 GenericParser
-│   └── 實作 ImportService（去重邏輯）
+│   ├── 實作 ImportService（去重邏輯）
+│   └── 確保 API 文件自動生成（/docs, /redoc）
 │
 └── 擴充套件
     ├── 設定 Manifest V3
-    ├── 實作 Popup UI
+    ├── 實作 Popup UI（含 Notion 偵測）
     ├── 實作內容提取
     └── 實作 API 呼叫
 
@@ -298,6 +299,33 @@ GET    /api/v1/stats                 # 統計資訊
 ✅ 擴充套件可載入
 ✅ 點擊「收藏」後，文章存入 SQLite
 ✅ 重複收藏會正確處理（跳過或更新）
+✅ /docs 可查看 API 文件
+```
+
+### Phase 1b: Notion 樹狀抓取
+
+```
+目標：可以一鍵收藏 Notion 頁面及所有子頁面
+
+任務：
+├── 後端
+│   ├── 實作 NotionParser
+│   ├── 實作樹狀匯入 API（含父子關係）
+│   └── 實作 article_hierarchy 查詢
+│
+└── 擴充套件
+    ├── 實作 Notion 頁面偵測
+    ├── 實作子頁面掃描
+    ├── 實作樹狀收藏 UI（子頁面選擇）
+    ├── 實作進度顯示
+    └── 實作遞迴抓取（BFS + visited set）
+
+驗收：
+✅ 擴充套件偵測到 Notion 頁面時顯示特殊 UI
+✅ 可列出並選擇子頁面
+✅ 可一鍵收藏選中的頁面（含進度）
+✅ 父子關係正確儲存
+✅ 循環引用不會造成無限迴圈
 ```
 
 ### Phase 2: 資料收集完整（Week 3-4）
@@ -433,7 +461,100 @@ settings = Settings()
 
 ---
 
-## 6. 測試策略
+## 6. 整合層設計
+
+### 6.1 API 設計原則
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    API 設計原則                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   1. RESTful + JSON                                         │
+│      - 資源導向設計                                          │
+│      - 統一使用 JSON 格式                                    │
+│                                                             │
+│   2. 版本化                                                  │
+│      - /api/v1/ 前綴                                        │
+│      - 新版本不破壞舊介面                                    │
+│                                                             │
+│   3. 統一錯誤格式                                            │
+│      - 所有錯誤回傳相同結構                                  │
+│      - 包含 code、message、details                          │
+│                                                             │
+│   4. 自動文件                                                │
+│      - FastAPI 自動產生 OpenAPI spec                        │
+│      - /docs (Swagger UI)                                   │
+│      - /redoc (ReDoc)                                       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 6.2 認證機制
+
+```python
+# 認證策略：可選的 API Key
+
+# 本地模式（預設）
+# - 未設定 API_KEY 環境變數
+# - 所有請求無需認證
+
+# 認證模式
+# - 設定 API_KEY 環境變數
+# - 所有請求需帶 X-API-Key Header
+
+from fastapi import Security, HTTPException
+from fastapi.security import APIKeyHeader
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+async def verify_api_key(api_key: str = Security(api_key_header)):
+    expected_key = settings.api_key
+    if expected_key is None:
+        return  # 本地模式，不需認證
+    if api_key != expected_key:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
+```
+
+### 6.3 支援的整合方式
+
+| 方式 | 說明 | 範例 |
+|------|------|------|
+| HTTP API | 標準 REST 呼叫 | curl、httpx、fetch |
+| CLI | 命令列工具 | `python scripts/import_url.py <url>` |
+| 批量匯入 | .zip / JSON 檔案 | `python scripts/import_zip.py <file>` |
+| SDK | Python package（未來）| `from knowledge_platform import Client` |
+
+### 6.4 整合流程
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    整合流程                                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   1. 閱讀 API 文件                                          │
+│      └── GET /docs 或 /redoc                               │
+│                                                             │
+│   2. 測試連線                                                │
+│      └── GET /api/v1/health                                │
+│                                                             │
+│   3. 送入資料                                                │
+│      ├── 單篇: POST /api/v1/articles                       │
+│      └── 批量: POST /api/v1/articles/batch                 │
+│                                                             │
+│   4. 驗證結果                                                │
+│      └── GET /api/v1/articles?source_id=xxx               │
+│                                                             │
+│   5. 搜尋使用                                                │
+│      ├── 關鍵字: GET /api/v1/search?q=xxx                  │
+│      └── 語意: POST /api/v1/search/semantic                │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 7. 測試策略
 
 ### 6.1 測試類型
 
