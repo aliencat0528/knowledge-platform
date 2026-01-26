@@ -10,6 +10,7 @@ const CONFIG = {
   serverUrl: 'http://localhost:8000',
   healthEndpoint: '/api/v1/health',
   articlesEndpoint: '/api/v1/articles',
+  batchEndpoint: '/api/v1/articles/batch',
   treeEndpoint: '/api/v1/articles/tree',
 };
 
@@ -36,6 +37,23 @@ const elements = {
   subpagesCount: null,
   selectAllBtn: null,
   deselectAllBtn: null,
+  // Mode elements
+  singleMode: null,
+  batchMode: null,
+  modeTabs: null,
+  // Batch mode elements
+  batchTagsInput: null,
+  tabsList: null,
+  tabsCount: null,
+  selectAllTabsBtn: null,
+  deselectAllTabsBtn: null,
+  batchSaveBtn: null,
+  batchStatus: null,
+  batchStatusIcon: null,
+  batchStatusMessage: null,
+  batchProgress: null,
+  batchProgressFill: null,
+  batchProgressText: null,
 };
 
 // Current page state
@@ -49,6 +67,11 @@ let currentPage = {
 // Sub-pages state
 let subPages = [];
 let isCrawling = false;
+
+// Batch mode state
+let currentMode = 'single'; // 'single' or 'batch'
+let allTabs = [];
+let isBatchSaving = false;
 
 /**
  * Initialize popup
@@ -97,6 +120,23 @@ function initElements() {
   elements.subpagesCount = document.getElementById('subpagesCount');
   elements.selectAllBtn = document.getElementById('selectAllBtn');
   elements.deselectAllBtn = document.getElementById('deselectAllBtn');
+  // Mode elements
+  elements.singleMode = document.getElementById('singleMode');
+  elements.batchMode = document.getElementById('batchMode');
+  elements.modeTabs = document.querySelectorAll('.mode-tab');
+  // Batch mode elements
+  elements.batchTagsInput = document.getElementById('batchTagsInput');
+  elements.tabsList = document.getElementById('tabsList');
+  elements.tabsCount = document.getElementById('tabsCount');
+  elements.selectAllTabsBtn = document.getElementById('selectAllTabsBtn');
+  elements.deselectAllTabsBtn = document.getElementById('deselectAllTabsBtn');
+  elements.batchSaveBtn = document.getElementById('batchSaveBtn');
+  elements.batchStatus = document.getElementById('batchStatus');
+  elements.batchStatusIcon = document.getElementById('batchStatusIcon');
+  elements.batchStatusMessage = document.getElementById('batchStatusMessage');
+  elements.batchProgress = document.getElementById('batchProgress');
+  elements.batchProgressFill = document.getElementById('batchProgressFill');
+  elements.batchProgressText = document.getElementById('batchProgressText');
 }
 
 /**
@@ -183,6 +223,16 @@ function setupEventListeners() {
   // Sub-pages selection
   elements.selectAllBtn?.addEventListener('click', selectAllSubPages);
   elements.deselectAllBtn?.addEventListener('click', deselectAllSubPages);
+
+  // Mode tabs
+  elements.modeTabs.forEach(tab => {
+    tab.addEventListener('click', () => switchMode(tab.dataset.mode));
+  });
+
+  // Batch mode events
+  elements.selectAllTabsBtn?.addEventListener('click', selectAllTabs);
+  elements.deselectAllTabsBtn?.addEventListener('click', deselectAllTabs);
+  elements.batchSaveBtn?.addEventListener('click', saveBatchTabs);
 }
 
 /**
@@ -640,7 +690,286 @@ document.addEventListener('change', (e) => {
   if (e.target.matches('.subpage-item input[type="checkbox"]')) {
     updateSubPagesCount();
   }
+  if (e.target.matches('.tab-item input[type="checkbox"]')) {
+    updateTabsCount();
+  }
 });
+
+/**
+ * Switch between single and batch mode
+ * @param {string} mode - 'single' or 'batch'
+ */
+function switchMode(mode) {
+  currentMode = mode;
+
+  // Update tab styles
+  elements.modeTabs.forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.mode === mode);
+  });
+
+  // Show/hide mode sections
+  if (mode === 'single') {
+    elements.singleMode.style.display = 'block';
+    elements.batchMode.style.display = 'none';
+  } else {
+    elements.singleMode.style.display = 'none';
+    elements.batchMode.style.display = 'block';
+    // Load tabs when switching to batch mode
+    loadAllTabs();
+  }
+}
+
+/**
+ * Load all tabs in the current window
+ */
+async function loadAllTabs() {
+  try {
+    elements.tabsList.innerHTML = '<div class="tabs-loading">載入中...</div>';
+
+    // Get all tabs in current window
+    const tabs = await chrome.tabs.query({ currentWindow: true });
+
+    // Filter out extension pages and empty tabs
+    allTabs = tabs.filter(tab => {
+      const url = tab.url || '';
+      return (
+        url.startsWith('http://') ||
+        url.startsWith('https://')
+      ) && !url.startsWith('chrome://') && !url.startsWith('chrome-extension://');
+    });
+
+    renderTabsList();
+  } catch (error) {
+    console.error('Failed to load tabs:', error);
+    elements.tabsList.innerHTML = '<div class="tabs-empty">無法載入分頁</div>';
+  }
+}
+
+/**
+ * Render tabs list
+ */
+function renderTabsList() {
+  if (allTabs.length === 0) {
+    elements.tabsList.innerHTML = '<div class="tabs-empty">沒有可收藏的分頁</div>';
+    elements.tabsCount.textContent = '';
+    elements.batchSaveBtn.disabled = true;
+    return;
+  }
+
+  const html = allTabs.map((tab, index) => {
+    const favicon = tab.favIconUrl || 'icons/icon16.png';
+    const title = tab.title || '(無標題)';
+    const url = tab.url || '';
+    const hostname = new URL(url).hostname;
+
+    return `
+      <div class="tab-item">
+        <input type="checkbox" id="tab-${index}" data-index="${index}" checked>
+        <img class="tab-item-favicon" src="${favicon}" onerror="this.src='icons/icon16.png'">
+        <label for="tab-${index}" class="tab-item-content">
+          <div class="tab-item-title" title="${title}">${title}</div>
+          <div class="tab-item-url" title="${url}">${hostname}</div>
+        </label>
+      </div>
+    `;
+  }).join('');
+
+  elements.tabsList.innerHTML = html;
+  updateTabsCount();
+}
+
+/**
+ * Update tabs count display
+ */
+function updateTabsCount() {
+  const checkboxes = elements.tabsList.querySelectorAll('input[type="checkbox"]');
+  const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+  elements.tabsCount.textContent = `已選擇 ${checkedCount} / ${allTabs.length} 個分頁`;
+
+  // Update button state
+  elements.batchSaveBtn.disabled = checkedCount === 0;
+  elements.batchSaveBtn.textContent = checkedCount > 0
+    ? `📚 收藏 ${checkedCount} 個分頁`
+    : '📚 收藏選中的分頁';
+}
+
+/**
+ * Select all tabs
+ */
+function selectAllTabs() {
+  const checkboxes = elements.tabsList.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(cb => cb.checked = true);
+  updateTabsCount();
+}
+
+/**
+ * Deselect all tabs
+ */
+function deselectAllTabs() {
+  const checkboxes = elements.tabsList.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(cb => cb.checked = false);
+  updateTabsCount();
+}
+
+/**
+ * Get selected tabs
+ * @returns {Array}
+ */
+function getSelectedTabs() {
+  const checkboxes = elements.tabsList.querySelectorAll('input[type="checkbox"]:checked');
+  return Array.from(checkboxes).map(cb => {
+    const index = parseInt(cb.dataset.index);
+    return allTabs[index];
+  });
+}
+
+/**
+ * Show batch status
+ * @param {'success'|'error'|'loading'} type
+ * @param {string} message
+ */
+function showBatchStatus(type, message) {
+  elements.batchStatus.style.display = 'flex';
+  elements.batchStatus.className = `status ${type}`;
+
+  const icons = {
+    success: '✅',
+    error: '❌',
+    loading: '⏳',
+  };
+
+  elements.batchStatusIcon.textContent = icons[type] || '';
+  elements.batchStatusMessage.textContent = message;
+
+  // Auto-hide success after 3s
+  if (type === 'success') {
+    setTimeout(() => {
+      elements.batchStatus.style.display = 'none';
+    }, 3000);
+  }
+}
+
+/**
+ * Update batch progress
+ * @param {number} current
+ * @param {number} total
+ */
+function updateBatchProgress(current, total) {
+  const percentage = total > 0 ? (current / total) * 100 : 0;
+  elements.batchProgress.style.display = 'block';
+  elements.batchProgressFill.style.width = `${percentage}%`;
+  elements.batchProgressText.textContent = `${current}/${total}`;
+}
+
+/**
+ * Save batch tabs
+ */
+async function saveBatchTabs() {
+  const selectedTabs = getSelectedTabs();
+
+  if (selectedTabs.length === 0) {
+    showBatchStatus('error', '請至少選擇一個分頁');
+    return;
+  }
+
+  isBatchSaving = true;
+  elements.batchSaveBtn.disabled = true;
+
+  const tags = parseTags(elements.batchTagsInput.value);
+  const totalTabs = selectedTabs.length;
+  let processedCount = 0;
+  const articles = [];
+
+  showBatchStatus('loading', '正在擷取頁面內容...');
+  updateBatchProgress(0, totalTabs);
+
+  try {
+    // Extract content from each tab
+    for (const tab of selectedTabs) {
+      showBatchStatus('loading', `擷取中: ${tab.title?.slice(0, 30) || ''}...`);
+
+      try {
+        // Try to extract content via content script
+        let content = null;
+        try {
+          content = await chrome.tabs.sendMessage(tab.id, {
+            action: 'extractContent',
+          });
+        } catch (e) {
+          // Content script might not be loaded, try injecting
+          try {
+            const results = await chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              func: () => {
+                return {
+                  text: document.body.innerText,
+                  html: document.body.innerHTML,
+                };
+              },
+            });
+            content = results[0]?.result || null;
+          } catch (injectError) {
+            console.error(`Failed to inject script for ${tab.url}:`, injectError);
+          }
+        }
+
+        // Detect if Notion page
+        const isNotion = tab.url?.includes('notion.so') || tab.url?.includes('notion.site');
+        const notionMatch = tab.url?.match(/([a-f0-9]{32})/i);
+
+        articles.push({
+          source_type: isNotion ? 'notion' : 'web',
+          source_id: isNotion && notionMatch
+            ? notionMatch[1].toLowerCase()
+            : generateSourceId(tab.url),
+          title: tab.title || '(無標題)',
+          content: content?.markdown || content?.text || content?.html || '',
+          url: tab.url,
+          tags: tags,
+          notion_page_id: isNotion && notionMatch ? notionMatch[1].toLowerCase() : null,
+        });
+      } catch (error) {
+        console.error(`Failed to extract content from ${tab.url}:`, error);
+      }
+
+      processedCount++;
+      updateBatchProgress(processedCount, totalTabs);
+    }
+
+    if (articles.length === 0) {
+      throw new Error('無法擷取任何頁面內容');
+    }
+
+    // Send batch to server
+    showBatchStatus('loading', '正在儲存...');
+
+    const response = await fetch(`${CONFIG.serverUrl}${CONFIG.batchEndpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ articles }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || '儲存失敗');
+    }
+
+    const result = await response.json();
+    const summary = result.summary || {};
+    const newCount = summary.new || 0;
+    const updatedCount = summary.updated || 0;
+    const skippedCount = summary.skipped || 0;
+
+    showBatchStatus('success', `✨ 完成！新增 ${newCount}，更新 ${updatedCount}，跳過 ${skippedCount}`);
+  } catch (error) {
+    console.error('Batch save failed:', error);
+    showBatchStatus('error', error.message || '批量儲存失敗');
+  } finally {
+    isBatchSaving = false;
+    elements.batchSaveBtn.disabled = false;
+    elements.batchProgress.style.display = 'none';
+  }
+}
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', init);

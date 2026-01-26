@@ -10,9 +10,16 @@
   <div class="container">
     <header class="header">
       <h1>📥 Knowledge Collector</h1>
+      <!-- Mode Tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="single">單頁收藏</button>
+        <button class="mode-tab" data-mode="batch">批量收藏</button>
+      </div>
     </header>
 
     <main class="main">
+      <!-- Single Page Mode -->
+      <div id="singleMode">
       <!-- Page Info -->
       <section class="page-info" id="pageInfo">
         <div class="page-title" id="pageTitle">載入中...</div>
@@ -69,6 +76,52 @@
         </div>
         <div class="progress-text" id="progressText">0/0</div>
       </section>
+      </div><!-- End Single Mode -->
+
+      <!-- Batch Mode -->
+      <div id="batchMode" style="display: none;">
+        <!-- Batch Tags Input -->
+        <section class="tags-section">
+          <label for="batchTagsInput">共用標籤（套用到所有分頁）</label>
+          <input type="text" id="batchTagsInput" placeholder="以逗號分隔，如：React, 學習">
+        </section>
+
+        <!-- Tabs List -->
+        <section class="tabs-section">
+          <div class="tabs-header">
+            <span class="tabs-title">開啟的分頁</span>
+            <div class="tabs-actions">
+              <button class="btn-link" id="selectAllTabsBtn">全選</button>
+              <button class="btn-link" id="deselectAllTabsBtn">取消全選</button>
+            </div>
+          </div>
+          <div class="tabs-list" id="tabsList">
+            <div class="tabs-loading">載入中...</div>
+          </div>
+          <div class="tabs-count" id="tabsCount"></div>
+        </section>
+
+        <!-- Batch Actions -->
+        <section class="actions">
+          <button class="btn btn-primary" id="batchSaveBtn" disabled>
+            📚 收藏選中的分頁
+          </button>
+        </section>
+
+        <!-- Batch Status -->
+        <section class="status" id="batchStatus" style="display: none;">
+          <div class="status-icon" id="batchStatusIcon"></div>
+          <div class="status-message" id="batchStatusMessage"></div>
+        </section>
+
+        <!-- Batch Progress -->
+        <section class="progress" id="batchProgress" style="display: none;">
+          <div class="progress-bar">
+            <div class="progress-fill" id="batchProgressFill"></div>
+          </div>
+          <div class="progress-text" id="batchProgressText">0/0</div>
+        </section>
+      </div><!-- End Batch Mode -->
     </main>
 
     <footer class="footer">
