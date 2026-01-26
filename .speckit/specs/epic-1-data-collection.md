@@ -70,7 +70,7 @@ Scenario: 重複收藏同一頁面
 
 ---
 
-## User Story 1.2: 樹狀抓取（Notion 專用）
+## User Story 1.2: 樹狀抓取（Notion 專用）⭐ Phase 1b 核心
 
 ### 描述
 ```
@@ -97,6 +97,19 @@ Scenario: 子頁面有循環引用
   When 我抓取頁面 A + 子頁面
   Then 系統偵測到循環並跳過已抓取的頁面
   And 不會無限迴圈
+
+Scenario: 只收藏當前 Notion 頁面
+  Given 我正在瀏覽一個 Notion 頁面
+  When 我點擊「只收藏此頁」
+  Then 只抓取當前頁面，不遞迴
+  And 顯示「成功收藏 1 個頁面」
+
+Scenario: 選擇性收藏子頁面
+  Given 我正在瀏覽一個有 10 個子頁面的 Notion 頁面
+  When 我點擊「收藏 + 子頁面」
+  Then 顯示子頁面列表供勾選
+  And 我可以取消不需要的子頁面
+  And 只抓取勾選的頁面
 ```
 
 ### 技術備註
@@ -104,6 +117,72 @@ Scenario: 子頁面有循環引用
 - 使用 BFS 或 DFS 遍歷
 - 維護 visited set 避免循環
 - 記錄 article_hierarchy 關係
+
+### Notion 頁面偵測
+
+```javascript
+// 判斷是否為 Notion 頁面
+function isNotionPage(url) {
+  return /notion\.so|notion\.site/.test(url);
+}
+
+// 子頁面選擇器（可能需要更新）
+const SUB_PAGE_SELECTORS = [
+  '[data-block-id] a[href*="notion.so"]',
+  '.notion-page-block a',
+  '.notion-collection-item a'
+];
+```
+
+### UI 規格（Notion 模式）
+
+```
+┌─────────────────────────────────┐
+│  📥 Knowledge Collector         │
+│  ─────────────────────────────  │
+│                                 │
+│  🔗 Notion 頁面偵測到            │
+│                                 │
+│  📄 Backend 教育訓練文件         │
+│  notion.so/...                  │
+│                                 │
+│  發現 5 個子頁面：               │
+│  ☑️ API 設計規範                │
+│  ☑️ 資料庫設計                  │
+│  ☑️ 部署流程                    │
+│  ☐ 會議記錄（取消勾選）          │
+│  ☑️ 開發環境設定                │
+│                                 │
+│  ┌───────────────────────────┐ │
+│  │  📄 只收藏此頁             │ │
+│  └───────────────────────────┘ │
+│  ┌───────────────────────────┐ │
+│  │  📂 收藏此頁 + 勾選的子頁面 │ │
+│  └───────────────────────────┘ │
+│                                 │
+│  ─────────────────────────────  │
+│  💡 服務狀態：🟢 運行中         │
+│                                 │
+└─────────────────────────────────┘
+```
+
+### 進度顯示
+
+```
+┌─────────────────────────────────┐
+│  📥 正在收藏...                  │
+│  ─────────────────────────────  │
+│                                 │
+│  ████████░░░░░░░░░░░░  3/6      │
+│                                 │
+│  ✅ Backend 教育訓練文件         │
+│  ✅ API 設計規範                │
+│  🔄 資料庫設計（進行中）         │
+│  ⏳ 部署流程                    │
+│  ⏳ 開發環境設定                │
+│                                 │
+└─────────────────────────────────┘
+```
 
 ---
 
@@ -238,12 +317,87 @@ Scenario: 排程執行
 
 ---
 
-## 優先級
+## User Story 1.6: 外部工具整合
 
-| User Story | 優先級 | Phase |
-|------------|--------|-------|
-| 1.1 單頁抓取 | P0 | Phase 1 |
-| 1.3 批量分頁 | P1 | Phase 2 |
-| 1.4 .zip 匯入 | P1 | Phase 2 |
-| 1.2 樹狀抓取 | P2 | Phase 2 |
-| 1.5 排程爬取 | P3 | Phase 4 |
+### 描述
+```
+作為一個第三方開發者
+我想要透過 API 將爬取內容送入平台
+這樣我可以整合現有的爬蟲工具或自製腳本
+```
+
+### 驗收條件 (Acceptance Criteria)
+
+```gherkin
+Scenario: 透過 API 送入文章
+  Given 我有一個自製的爬蟲腳本
+  And 本地服務正在運行
+  When 我呼叫 POST /api/v1/articles
+  And 送入符合格式的 JSON
+  Then 文章被儲存到資料庫
+  And 回傳成功結果與 article_id
+
+Scenario: 批量送入文章
+  Given 我有 20 篇文章要匯入
+  When 我呼叫 POST /api/v1/articles/batch
+  And 送入文章陣列
+  Then 系統批量處理並回傳統計
+  And 顯示「新增 15，更新 3，跳過 2」
+
+Scenario: 查詢 API 文件
+  Given 我想了解 API 規格
+  When 我訪問 /docs 或 /redoc
+  Then 看到完整的 OpenAPI 文件
+  And 可以直接測試 API
+```
+
+### API 規格
+
+```yaml
+# 單篇文章
+POST /api/v1/articles
+Content-Type: application/json
+
+{
+  "source_type": "web",           # 必填：notion | medium | docs | web
+  "source_id": "unique-id",       # 必填：來源唯一識別
+  "title": "文章標題",             # 必填
+  "content": "# Markdown 內容",   # 必填
+  "url": "https://...",           # 選填
+  "author": "作者",               # 選填
+  "tags": ["tag1", "tag2"],       # 選填
+  "published_at": "2024-01-01"    # 選填
+}
+
+# 批量文章
+POST /api/v1/articles/batch
+{
+  "articles": [ /* 同上格式 */ ]
+}
+```
+
+### 錯誤回應格式
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "source_type is required",
+    "details": { "field": "source_type" }
+  }
+}
+```
+
+---
+
+## 優先級（調整後）
+
+| User Story | 優先級 | Phase | 說明 |
+|------------|--------|-------|------|
+| 1.1 單頁抓取 | P0 | Phase 1a | 基礎功能 |
+| 1.2 樹狀抓取 | **P0** | **Phase 1b** | **Notion 優先** |
+| 1.6 外部整合 | P0 | Phase 1a | API 文件自動生成 |
+| 1.3 批量分頁 | P1 | Phase 2 | |
+| 1.4 .zip 匯入 | P1 | Phase 2 | |
+| 1.5 排程爬取 | P3 | Phase 4 | |
