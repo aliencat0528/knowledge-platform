@@ -157,6 +157,8 @@ graph TB
         popup["popup/<br/>使用者介面"]
         content["content/<br/>內容抓取"]
         bg["background/<br/>Service Worker"]
+        utils["utils/<br/>Notion 偵測"]
+        lib["lib/<br/>Readability + Turndown"]
     end
 
     subgraph Server["packages/server"]
@@ -311,7 +313,7 @@ mindmap
       SQLite
       ChromaDB
     Extension
-      TypeScript
+      JavaScript ES6+
       Chrome Manifest V3
       Readability.js
       Turndown.js

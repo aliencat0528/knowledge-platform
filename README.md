@@ -49,16 +49,14 @@ uvicorn main:app --reload
 ### 安裝擴充套件
 
 ```bash
-# 1. 建置擴充套件
-cd packages/extension
-npm install
-npm run build
+# 在 Chrome 載入擴充套件
+# 1. 打開 chrome://extensions/
+# 2. 啟用「開發人員模式」
+# 3. 點擊「載入未封裝項目」
+# 4. 選擇 packages/extension 目錄
 
-# 2. 在 Chrome 載入
-# - 打開 chrome://extensions/
-# - 啟用「開發人員模式」
-# - 點擊「載入未封裝項目」
-# - 選擇 packages/extension/dist 目錄
+# 目前擴充套件為純 JavaScript，無需 build 步驟
+# 直接載入源碼目錄即可
 ```
 
 ---
