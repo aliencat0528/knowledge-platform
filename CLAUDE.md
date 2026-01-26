@@ -162,6 +162,90 @@ main ─────────────────────────
 
 ---
 
+## 階段性功能測試文件
+
+> **Claude 必須在每個階段性功能完成後，主動提供完整測試流程**
+
+### 測試文件格式
+
+每完成一個 Task 或功能模組後，必須提供以下資訊：
+
+```markdown
+## ✅ Task #X 完成：[功能名稱]
+
+### 完整測試流程
+
+**1. 環境準備**
+- 啟動伺服器指令
+- 所需環境變數
+- 前置條件
+
+**2. 測試指令**
+- CLI 測試（如適用）
+- API 測試（curl 指令）
+- 瀏覽器測試（如適用）
+
+**3. 預期結果**
+- 成功時的輸出範例
+- 錯誤處理範例
+
+**4. 驗證方式**
+- 資料庫查詢
+- API 回應確認
+- UI 狀態確認
+
+### 新增/修改檔案
+| 檔案 | 說明 |
+|------|------|
+
+### 新增 API 端點（如適用）
+| 端點 | 方法 | 說明 |
+|------|------|------|
+```
+
+### 觸發條件
+
+| 情況 | 行為 |
+|------|------|
+| 完成一個 Task | 提供該功能的完整測試流程 |
+| 新增 API 端點 | 提供 curl 測試指令 |
+| 新增 CLI 工具 | 提供使用範例和參數說明 |
+| 新增擴充套件功能 | 提供手動測試步驟 |
+
+### 範例
+
+```markdown
+## ✅ Task #1 完成：.zip 匯入功能
+
+### 完整測試流程
+
+**1. 啟動伺服器**
+\`\`\`bash
+python -m uvicorn packages.server.main:app --reload
+\`\`\`
+
+**2. CLI 測試**
+\`\`\`bash
+# Preview 模式
+python scripts/import_zip.py ~/Downloads/Export.zip --preview
+
+# 實際匯入
+python scripts/import_zip.py ~/Downloads/Export.zip
+\`\`\`
+
+**3. API 測試**
+\`\`\`bash
+curl -X POST -F "file=@Export.zip" http://localhost:8000/api/v1/import/zip
+\`\`\`
+
+**4. 驗證資料**
+\`\`\`bash
+sqlite3 data/knowledge.db "SELECT id, title FROM articles LIMIT 10"
+\`\`\`
+```
+
+---
+
 ## 觸發詞與文件更新
 
 當這些關鍵詞出現時，檢查是否需要更新相關文件：
