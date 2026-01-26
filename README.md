@@ -177,6 +177,31 @@ pytest tests/
 
 ---
 
+## 版本歷史
+
+### v0.2.0 (開發中)
+- **Chrome 擴充套件核心**
+  - Manifest V3 設定
+  - Popup UI 與伺服器狀態指示
+  - 內容提取（Readability.js + Turndown.js）
+  - Notion 頁面偵測與 ID 提取
+  - Service Worker 背景服務
+
+### v0.1.0 (2026-01-26)
+- **專案初始化**
+  - Python FastAPI 後端服務
+  - SQLite 資料庫層（含 article_hierarchy）
+  - Pydantic 資料模型
+  - Generic Parser 基礎實作
+  - Import Service（含去重邏輯）
+  - Articles API 端點
+  - Spec Kit 規格文件
+  - 專案文件（README、ARCHITECTURE.md）
+
+> 完整變更記錄請參考 [CHANGELOG.md](CHANGELOG.md)
+
+---
+
 ## 授權
 
 MIT License
