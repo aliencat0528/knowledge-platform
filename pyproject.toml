@@ -1,0 +1,129 @@
+[project]
+name = "knowledge-platform"
+version = "0.1.0"
+description = "個人知識管理平台 - 整合多種來源的技術文章與筆記"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "your@email.com"}
+]
+keywords = ["knowledge", "management", "notes", "rag", "notion"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # Web Framework
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+
+    # Database
+    "aiosqlite>=0.19.0",
+
+    # Vector Database
+    "chromadb>=0.4.22",
+
+    # HTTP Client
+    "httpx>=0.26.0",
+
+    # HTML Parsing
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.1.0",
+    "markdownify>=0.11.0",
+
+    # Notion API
+    "notion-client>=2.2.0",
+
+    # OpenAI
+    "openai>=1.10.0",
+
+    # Scheduler
+    "apscheduler>=3.10.0",
+
+    # Utils
+    "python-dotenv>=1.0.0",
+    "python-multipart>=0.0.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.0",
+    "black>=24.1.0",
+    "ruff>=0.1.14",
+    "mypy>=1.8.0",
+]
+
+[project.scripts]
+knowledge-server = "packages.server.main:run"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["packages"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+exclude = '''
+/(
+    \.git
+    | \.hatch
+    | \.mypy_cache
+    | \.pytest_cache
+    | \.venv
+    | data
+    | node_modules
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+]
+exclude = [
+    ".git",
+    ".hatch",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".venv",
+    "data",
+    "node_modules",
+]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+exclude = [
+    "data/",
+    "node_modules/",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"
