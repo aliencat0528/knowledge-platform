@@ -327,6 +327,69 @@ Scenario: Chat 介面
 
 ---
 
+## User Story 4.5: 多 Provider 支援
+
+### 描述
+```
+作為使用者
+我想要選擇不同的 LLM 和 Embedding 提供者
+這樣我可以根據需求選擇最適合的模型
+```
+
+### 驗收條件 (Acceptance Criteria)
+
+```gherkin
+Scenario: 切換 LLM Provider
+  Given 系統支援 OpenAI、Anthropic、Ollama
+  When 我在設定頁選擇 Anthropic
+  And 設定 API Key
+  Then Chat 功能使用 Anthropic Claude 模型
+
+Scenario: 切換 Embedding Provider
+  Given 系統支援 OpenAI、Ollama embedding
+  When 我選擇 Ollama nomic-embed-text
+  Then 新文章使用 Ollama 進行向量化
+
+Scenario: 本地模型（Ollama）
+  Given 我安裝了 Ollama 並下載模型
+  When 我選擇 Ollama 作為 Provider
+  Then 不需要 API Key
+  And 所有處理在本地完成
+
+Scenario: Provider 健康檢查
+  Given 我設定了某個 Provider
+  When 我點擊「測試連線」
+  Then 顯示連線狀態和延遲
+```
+
+### 支援的 Provider
+
+| 類型 | Provider | 模型 |
+|------|----------|------|
+| **LLM** | OpenAI | gpt-4o, gpt-4o-mini, gpt-3.5-turbo |
+| | Anthropic | claude-3-opus, claude-3-sonnet, claude-3-haiku |
+| | Ollama | llama3, mistral, codellama |
+| **Embedding** | OpenAI | text-embedding-3-small, text-embedding-3-large |
+| | Ollama | nomic-embed-text, mxbai-embed-large |
+
+### API 定義
+
+```
+GET /api/v1/providers
+# 列出可用 Provider
+
+GET /api/v1/providers/current
+# 取得當前設定
+
+PUT /api/v1/providers/current
+# 更新 Provider 設定
+
+POST /api/v1/providers/test
+# 測試 Provider 連線
+```
+
+---
+
 ## 優先級
 
 | User Story | 優先級 | Phase |
@@ -335,3 +398,4 @@ Scenario: Chat 介面
 | 4.2 語意搜尋 | P1 | Phase 3 |
 | 4.3 Chat 對話 | P2 | Phase 4 |
 | 4.4 Web UI | P2 | Phase 4 |
+| 4.5 多 Provider 支援 | P3 | Phase 5 |
