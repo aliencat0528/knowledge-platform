@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # Embedding
     embedding_provider: str = "openai"
     embedding_model: str = "text-embedding-3-small"
+    auto_embed: bool = False  # Auto-embed new articles on import
 
     # LLM
     llm_provider: str = "openai"

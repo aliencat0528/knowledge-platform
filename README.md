@@ -15,7 +15,7 @@
 - 📁 **樹狀抓取** - 一次收藏 Notion 頁面及所有子頁面
 - 📑 **批量收藏** - 一次收藏所有開啟的分頁
 - 📦 **Zip 匯入** - 匯入 Notion Export .zip 檔案
-- 🤖 **AI 對話匯入** - 匯入 Claude Code、Cursor 等 AI 編輯器對話（開發中）
+- 🤖 **AI 對話匯入** - 匯入 Claude Code、Cursor 等 AI 編輯器對話
 - 🗂️ **智慧去重** - 自動偵測重複內容，追蹤版本變更
 - 🔍 **語意搜尋** - 用自然語言找到相關文章
 - 💬 **Chat 對話** - 與你的知識庫對話（RAG）
@@ -91,6 +91,22 @@ curl -X POST "http://localhost:8000/api/v1/search/semantic" \
 python scripts/import_zip.py path/to/Export.zip
 ```
 
+### 向量化文章（語意搜尋）
+
+```bash
+# 設定 OpenAI API Key
+export OPENAI_API_KEY=sk-...
+
+# 預覽要向量化的文章
+python scripts/embed_all.py --preview
+
+# 執行向量化
+python scripts/embed_all.py
+
+# 重新向量化全部（包含已向量化的）
+python scripts/embed_all.py --force
+```
+
 ---
 
 ## 專案結構
@@ -121,6 +137,9 @@ CHROMA_PATH=./data/chroma
 
 # OpenAI（語意搜尋 + Chat 需要）
 OPENAI_API_KEY=sk-...
+
+# 自動向量化（新文章匯入時自動產生 embedding）
+AUTO_EMBED=true
 
 # Notion 同步（選用）
 NOTION_API_KEY=secret_...
@@ -166,9 +185,9 @@ pytest tests/
 - `POST /api/v1/articles/batch` - 批量新增
 - `GET /api/v1/articles` - 列出文章
 - `POST /api/v1/import/zip` - 匯入 Notion Export .zip
-- `POST /api/v1/import/chat` - 匯入 AI 對話（開發中）
+- `POST /api/v1/import/chat` - 匯入 AI 對話
 - `GET /api/v1/search` - 關鍵字搜尋
-- `POST /api/v1/search/semantic` - 語意搜尋（Phase 3）
+- `POST /api/v1/search/semantic` - 語意搜尋
 - `POST /api/v1/chat` - Chat 對話（Phase 4）
 
 ---
@@ -176,7 +195,7 @@ pytest tests/
 ## 開發階段
 
 - [x] Phase 1: 核心基礎（單頁收藏 + Notion 樹狀抓取）
-- [ ] Phase 2: 資料收集（批量 + .zip + AI 對話匯入 + 關鍵字搜尋）
+- [x] Phase 2: 資料收集（批量 + .zip + AI 對話匯入 + 關鍵字搜尋）
 - [ ] Phase 3: 智慧搜尋（向量化 + Notion 同步）
 - [ ] Phase 4: 完整體驗（Chat + Web UI）
 
@@ -184,8 +203,25 @@ pytest tests/
 
 ## 版本歷史
 
-### v0.2.0 (開發中)
-- **Notion 樹狀抓取（Phase 1b 完成）**
+### v0.3.0 (開發中)
+- **語意搜尋（Phase 3 進行中）**
+  - ChromaDB 向量資料庫整合
+  - OpenAI Embedding Service
+  - 語意搜尋 API (`POST /search/semantic`)
+  - 批量向量化腳本 (`scripts/embed_all.py`)
+  - 新文章自動向量化選項
+
+### v0.2.0 (2026-01-27)
+- **AI 對話匯入（Phase 2 完成）**
+  - Claude Code JSONL 格式匯入
+  - Cursor SQLite 格式匯入
+  - Markdown 格式對話匯入
+  - CLI 自動偵測格式
+- **批量收藏與搜尋**
+  - 擴充套件批量分頁收藏
+  - Notion Export .zip 匯入
+  - 關鍵字搜尋 API
+- **Notion 樹狀抓取（Phase 1b）**
   - Notion 頁面 HTML 解析
   - 子頁面掃描與選擇 UI
   - 樹狀抓取與進度顯示

@@ -142,7 +142,27 @@ class SemanticSearchQuery(BaseModel):
 
     query: str = Field(..., min_length=1)
     limit: int = Field(default=5, ge=1, le=20)
-    threshold: float = Field(default=0.7, ge=0, le=1)
+    threshold: float = Field(default=0.0, ge=0, le=1)
+    source_type: SourceType | None = None
+
+
+class SemanticSearchResultItem(BaseModel):
+    """Single semantic search result item."""
+
+    id: int
+    title: str
+    snippet: str
+    similarity: float
+    source_type: str
+    url: str | None = None
+    tags: list[str] = Field(default_factory=list)
+
+
+class SemanticSearchResult(BaseModel):
+    """Model for semantic search results."""
+
+    success: bool = True
+    data: dict[str, Any] = Field(default_factory=dict)
 
 
 class SearchResultItem(BaseModel):

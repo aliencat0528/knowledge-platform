@@ -1,6 +1,6 @@
 """Search API endpoints."""
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from typing import Any
 
 from ..storage.database import Database, get_db
@@ -9,7 +9,11 @@ from ..storage.models import (
     SearchResultItem,
     ArticleResponse,
     SourceType,
+    SemanticSearchQuery,
+    SemanticSearchResult,
+    SemanticSearchResultItem,
 )
+from ..config import settings
 
 router = APIRouter(prefix="/search", tags=["Search"])
 
@@ -110,6 +114,100 @@ async def search_articles(
             },
         },
     )
+
+
+@router.post("/semantic", response_model=SemanticSearchResult, summary="Semantic search")
+async def semantic_search(
+    body: SemanticSearchQuery,
+    db: Database = Depends(get_db),
+) -> SemanticSearchResult:
+    """Search articles using semantic similarity.
+
+    Uses OpenAI embeddings and ChromaDB vector search to find
+    semantically similar articles based on meaning, not just keywords.
+
+    Requires:
+        - OPENAI_API_KEY environment variable
+        - Articles must be embedded first (is_embedded=True)
+
+    Returns:
+        SemanticSearchResult with similar articles and similarity scores.
+    """
+    # Check if OpenAI API key is configured
+    if not settings.openai_api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="Semantic search requires OPENAI_API_KEY to be configured",
+        )
+
+    # Import here to avoid circular imports and allow optional dependency
+    from ..services.embed_service import EmbedService
+    from ..storage.vector import get_vector_store
+
+    try:
+        # Create embed service
+        embed_service = EmbedService()
+
+        # Search for similar articles
+        vector_results = await embed_service.search_similar(
+            query=body.query,
+            n_results=body.limit,
+            threshold=body.threshold,
+            source_type=body.source_type.value if body.source_type else None,
+        )
+
+        # Fetch full article details from SQLite
+        results = []
+        for vr in vector_results:
+            article_id = vr.get("article_id")
+            if not article_id:
+                continue
+
+            row = await db.fetchone(
+                "SELECT * FROM articles WHERE id = ?",
+                (article_id,),
+            )
+            if not row:
+                continue
+
+            # Parse tags
+            import json
+            tags = []
+            if row.get("tags"):
+                try:
+                    tags = json.loads(row["tags"])
+                except (json.JSONDecodeError, TypeError):
+                    tags = []
+
+            # Generate snippet from content
+            content = row.get("content", "")
+            snippet = content[:300] + "..." if len(content) > 300 else content
+
+            results.append(
+                SemanticSearchResultItem(
+                    id=row["id"],
+                    title=row["title"],
+                    snippet=snippet,
+                    similarity=round(vr["similarity"], 4),
+                    source_type=row["source_type"],
+                    url=row.get("url"),
+                    tags=tags,
+                )
+            )
+
+        return SemanticSearchResult(
+            success=True,
+            data={
+                "results": [r.model_dump() for r in results],
+                "total": len(results),
+                "query": body.query,
+            },
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Semantic search failed: {str(e)}")
 
 
 def _generate_highlights(content: str, query: str, max_highlights: int = 3) -> list[str]:
