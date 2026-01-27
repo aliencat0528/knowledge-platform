@@ -14,12 +14,12 @@
 | 4.4 | 對話歷史 | `feature/chat-rag-tenth` | ✅ 完成 |
 | 4.5 | 排程服務 | `feature/scheduler-eleventh` | ✅ 完成 |
 | 4.6 | 排程 API | `feature/scheduler-eleventh` | ✅ 完成 |
-| 4.7 | Vue 3 專案設定 | `feature/web-ui-twelfth` | 📋 待開始 |
-| 4.8 | 文章列表頁 | `feature/web-ui-twelfth` | 📋 待開始 |
-| 4.9 | 搜尋頁 | `feature/web-ui-twelfth` | 📋 待開始 |
-| 4.10 | Chat 頁 | `feature/web-ui-twelfth` | 📋 待開始 |
-| 4.11 | 設定頁 | `feature/web-ui-twelfth` | 📋 待開始 |
-| 4.12 | 整合測試 | `feature/web-ui-twelfth` | 📋 待開始 |
+| 4.7 | Vue 3 專案設定 | `feature/web-ui-twelfth` | ✅ 完成 |
+| 4.8 | 文章列表頁 | `feature/web-ui-twelfth` | ✅ 完成 |
+| 4.9 | 搜尋頁 | `feature/web-ui-twelfth` | ✅ 完成 |
+| 4.10 | Chat 頁 | `feature/web-ui-twelfth` | ✅ 完成 |
+| 4.11 | 設定頁 | `feature/web-ui-twelfth` | ✅ 完成 |
+| 4.12 | 整合測試 | `feature/web-ui-twelfth` | ✅ 完成 |
 
 ---
 
@@ -379,12 +379,12 @@ POST /api/v1/scheduler/tasks/{task_id}/run
 # Phase 4 第三分支完成條件
 
 ```
-□ Vue 3 專案可運行
-□ 文章列表可瀏覽
-□ 搜尋功能可用
-□ Chat 對話可用
-□ 設定頁可管理配置
-□ 整合測試通過
+✅ Vue 3 專案可運行
+✅ 文章列表可瀏覽
+✅ 搜尋功能可用
+✅ Chat 對話可用
+✅ 設定頁可管理配置
+✅ 整合測試通過
 ```
 
 ---

@@ -14,6 +14,7 @@ from .api.search import router as search_router
 from .api.sync import router as sync_router
 from .api.chat import router as chat_router
 from .api.scheduler import router as scheduler_router
+from .api.providers import router as providers_router
 from .services.scheduler_service import start_scheduler, stop_scheduler
 from .api.errors import (
     http_exception_handler,
@@ -75,6 +76,7 @@ app.include_router(search_router, prefix="/api/v1")
 app.include_router(sync_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
 app.include_router(scheduler_router, prefix="/api/v1")
+app.include_router(providers_router)  # Already has /api/v1/providers prefix
 
 
 @app.get("/api/v1/health", tags=["System"])
@@ -86,17 +88,35 @@ async def health_check():
 @app.get("/api/v1/stats", tags=["System"])
 async def get_stats():
     """Get system statistics."""
+    import os
+
     db = await get_db()
 
     # Get article counts
-    result = await db.fetchone(
+    article_result = await db.fetchone(
         "SELECT COUNT(*) as total, SUM(CASE WHEN is_embedded THEN 1 ELSE 0 END) as embedded FROM articles"
     )
 
+    # Get conversation count
+    conv_result = await db.fetchone("SELECT COUNT(*) as total FROM conversations")
+
+    # Get database size
+    db_size = "N/A"
+    if os.path.exists(settings.database_path):
+        size_bytes = os.path.getsize(settings.database_path)
+        if size_bytes < 1024:
+            db_size = f"{size_bytes} B"
+        elif size_bytes < 1024 * 1024:
+            db_size = f"{size_bytes / 1024:.1f} KB"
+        else:
+            db_size = f"{size_bytes / (1024 * 1024):.1f} MB"
+
     return {
         "status": "ok",
-        "articles_count": result["total"] if result else 0,
-        "embedded_count": result["embedded"] if result else 0,
+        "articles_count": article_result["total"] if article_result else 0,
+        "embedded_count": article_result["embedded"] if article_result else 0,
+        "conversations_count": conv_result["total"] if conv_result else 0,
+        "database_size": db_size,
         "database_path": settings.database_path,
     }
 
