@@ -212,7 +212,10 @@ pytest tests/
 - `POST /api/v1/sync/notion` - 同步文章到 Notion
 - `POST /api/v1/sync/notion/batch` - 批量同步到 Notion
 - `GET /api/v1/sync/status` - 取得同步狀態
-- `POST /api/v1/chat` - Chat 對話（Phase 4）
+- `POST /api/v1/chat` - Chat 對話（RAG）
+- `GET /api/v1/chat/history` - 對話歷史列表
+- `GET /api/v1/chat/history/{id}` - 對話詳情
+- `DELETE /api/v1/chat/history/{id}` - 刪除對話
 
 ---
 
@@ -227,7 +230,16 @@ pytest tests/
 
 ## 版本歷史
 
-### v0.3.0 (開發中)
+### v0.4.0 (開發中)
+- **Chat RAG（Phase 4 進行中）**
+  - RAG 流程（語意搜尋 + LLM）
+  - Chat 服務 (`ChatService`)
+  - Chat API 端點（`POST /chat`）
+  - 對話歷史管理
+  - 多輪對話支援
+  - 引用來源標註
+
+### v0.3.0 (2026-01-27)
 - **Notion 同步（Phase 3 完成）**
   - Notion 同步服務（建立/更新頁面）
   - 同步 API 端點（`POST /sync/notion`）

@@ -78,6 +78,25 @@ CREATE TABLE IF NOT EXISTS scheduled_tasks (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Conversations table: chat history management
+CREATE TABLE IF NOT EXISTS conversations (
+    id TEXT PRIMARY KEY,           -- UUID
+    title TEXT,                    -- Auto-generated from first message
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Messages table: individual chat messages
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversation_id TEXT NOT NULL,
+    role TEXT NOT NULL,            -- user | assistant
+    content TEXT NOT NULL,
+    sources TEXT,                  -- JSON array of source references
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
+);
+
 -- Indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_articles_source ON articles(source_type, source_id);
 CREATE INDEX IF NOT EXISTS idx_articles_content_hash ON articles(content_hash);
@@ -86,6 +105,9 @@ CREATE INDEX IF NOT EXISTS idx_articles_is_embedded ON articles(is_embedded);
 CREATE INDEX IF NOT EXISTS idx_article_history_article_id ON article_history(article_id);
 CREATE INDEX IF NOT EXISTS idx_article_hierarchy_parent ON article_hierarchy(parent_id);
 CREATE INDEX IF NOT EXISTS idx_article_hierarchy_child ON article_hierarchy(child_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_updated_at ON conversations(updated_at);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
 """
 
 

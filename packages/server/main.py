@@ -12,6 +12,7 @@ from .api.articles import router as articles_router
 from .api.import_api import router as import_router
 from .api.search import router as search_router
 from .api.sync import router as sync_router
+from .api.chat import router as chat_router
 from .api.errors import (
     http_exception_handler,
     validation_exception_handler,
@@ -68,6 +69,7 @@ app.include_router(articles_router, prefix="/api/v1")
 app.include_router(import_router, prefix="/api/v1")
 app.include_router(search_router, prefix="/api/v1")
 app.include_router(sync_router, prefix="/api/v1")
+app.include_router(chat_router, prefix="/api/v1")
 
 
 @app.get("/api/v1/health", tags=["System"])
