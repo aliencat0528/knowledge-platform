@@ -13,9 +13,9 @@
 | 3.3 | 語意搜尋 API | `feature/vector-search-eighth` | ✅ 完成 |
 | 3.4 | 批量向量化腳本 | `feature/vector-search-eighth` | ✅ 完成 |
 | 3.5 | 自動向量化 | `feature/vector-search-eighth` | ✅ 完成 |
-| 3.6 | Notion 同步服務 | `feature/notion-sync-ninth` | 📋 待開始 |
-| 3.7 | Notion 同步 API | `feature/notion-sync-ninth` | 📋 待開始 |
-| 3.8 | Notion 認證設定 | `feature/notion-sync-ninth` | 📋 待開始 |
+| 3.6 | Notion 同步服務 | `feature/notion-sync-ninth` | ✅ 完成 |
+| 3.7 | Notion 同步 API | `feature/notion-sync-ninth` | ✅ 完成 |
+| 3.8 | Notion 認證設定 | `feature/notion-sync-ninth` | ✅ 完成 |
 
 ---
 
@@ -271,3 +271,187 @@ sqlite3 data/knowledge.db "SELECT is_embedded FROM articles WHERE source_id = 't
 | 3.4 批量向量化腳本 | 1 hr |
 | 3.5 自動向量化 | 1 hr |
 | **vector-search-eighth 合計** | **~6 小時** |
+
+---
+
+# feature/notion-sync-ninth 分支任務
+
+## Task 3.6: Notion 同步服務 ✅
+
+### 描述
+實作將文章同步到 Notion Database 的服務
+
+### 輸出
+- `services/notion_sync.py`
+
+### 功能
+```python
+class NotionSync:
+    def __init__(self, api_key: str, database_id: str):
+        """初始化 Notion 客戶端"""
+        pass
+
+    async def sync_article(self, db: Database, article_id: int) -> dict:
+        """同步單篇文章到 Notion"""
+        pass
+
+    async def batch_sync(self, db: Database, article_ids: list[int] | None = None, limit: int = 10) -> dict:
+        """批量同步文章"""
+        pass
+
+    async def get_sync_status(self, db: Database) -> dict:
+        """取得同步狀態統計"""
+        pass
+```
+
+### 驗證
+```bash
+# 設定環境變數
+export NOTION_API_KEY=secret_...
+export NOTION_DATABASE_ID=...
+
+# 透過 API 同步
+curl -X POST http://localhost:8000/api/v1/sync/notion \
+  -H "Content-Type: application/json" \
+  -d '{"article_id": 1}'
+```
+
+### 相依
+- Phase 1a（文章儲存）
+
+---
+
+## Task 3.7: Notion 同步 API ✅
+
+### 描述
+提供 Notion 同步的 API 端點
+
+### 輸出
+- `api/sync.py`
+
+### API 端點
+```yaml
+# 同步單篇文章
+POST /api/v1/sync/notion
+Content-Type: application/json
+
+{
+  "article_id": 123
+}
+
+# 回應
+{
+  "success": true,
+  "article_id": 123,
+  "notion_page_id": "abc123...",
+  "notion_url": "https://notion.so/...",
+  "synced_at": "2026-01-27T12:30:00Z"
+}
+
+# 批量同步
+POST /api/v1/sync/notion/batch
+{
+  "article_ids": [1, 2, 3],  # 可選
+  "limit": 10
+}
+
+# 同步狀態
+GET /api/v1/sync/status
+
+# 移除同步資訊
+DELETE /api/v1/sync/notion/{article_id}
+```
+
+### 相依
+- Task 3.6
+
+---
+
+## Task 3.8: Notion 認證設定 ✅
+
+### 描述
+配置 Notion API 認證流程
+
+### 輸出
+- 更新 `.env.example`
+- 更新 `config.py`（已預設）
+
+### 設定方式
+
+#### 1. 建立 Notion Integration
+
+1. 前往 https://www.notion.so/my-integrations
+2. 點擊 "New integration"
+3. 填寫名稱（如 "Knowledge Platform"）
+4. 選擇 Workspace
+5. 點擊 "Submit"
+6. 複製 "Internal Integration Token"
+
+#### 2. 建立 Notion Database
+
+建立一個 Database 並包含以下欄位：
+
+| 欄位名稱 | 類型 | 說明 |
+|---------|------|------|
+| Name | Title | 文章標題 |
+| URL | URL | 文章連結 |
+| Source Type | Select | 來源類型（notion/web/docs/medium） |
+| Tags | Multi-select | 標籤 |
+| Author | Rich text | 作者 |
+| Published | Date | 發布日期 |
+| Saved At | Date | 儲存日期 |
+| Local ID | Number | 本地文章 ID |
+
+#### 3. 分享 Database 給 Integration
+
+1. 開啟 Database 頁面
+2. 點擊右上角 "..." → "Connections"
+3. 搜尋並選擇你的 Integration
+4. 點擊 "Confirm"
+
+#### 4. 設定環境變數
+
+```bash
+# .env
+NOTION_API_KEY=secret_abc123...
+NOTION_DATABASE_ID=12a34b56c78d...
+```
+
+Database ID 可從 URL 取得：
+`https://notion.so/<workspace>/<database_id>?v=...`
+
+### 驗證
+```bash
+# 檢查同步狀態
+curl http://localhost:8000/api/v1/sync/status
+
+# 應該回傳 configured: true
+```
+
+---
+
+# Phase 3 第二分支完成條件
+
+```
+✅ Notion 同步服務可正常運作
+✅ 可同步單篇文章到 Notion
+✅ 可批量同步文章
+✅ 同步狀態 API 可查詢
+✅ 認證設定文件完整
+```
+
+---
+
+# Phase 3 合計預估時間
+
+| Task | 時間 |
+|------|------|
+| 3.1 ChromaDB 整合 | 1 hr ✅ |
+| 3.2 Embedding Service | 1.5 hr ✅ |
+| 3.3 語意搜尋 API | 1.5 hr ✅ |
+| 3.4 批量向量化腳本 | 1 hr ✅ |
+| 3.5 自動向量化 | 1 hr ✅ |
+| 3.6 Notion 同步服務 | 2 hr ✅ |
+| 3.7 Notion 同步 API | 1 hr ✅ |
+| 3.8 Notion 認證設定 | 0.5 hr ✅ |
+| **Phase 3 合計** | **~9.5 小時** |
