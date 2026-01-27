@@ -1,7 +1,7 @@
 """Embedding service for converting text to vectors."""
 
 import asyncio
-from typing import Any
+from typing import Any, Callable
 
 from openai import AsyncOpenAI
 
@@ -193,7 +193,7 @@ class EmbedService:
     async def embed_articles_batch(
         self,
         articles: list[dict[str, Any]],
-        on_progress: callable | None = None,
+        on_progress: Callable | None = None,
     ) -> dict[str, int]:
         """Embed multiple articles in batch.
 

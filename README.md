@@ -107,6 +107,27 @@ python scripts/embed_all.py
 python scripts/embed_all.py --force
 ```
 
+### 同步到 Notion
+
+```bash
+# 1. 設定 Notion API（參考下方設定說明）
+export NOTION_API_KEY=secret_...
+export NOTION_DATABASE_ID=...
+
+# 2. 檢查同步狀態
+curl http://localhost:8000/api/v1/sync/status
+
+# 3. 同步單篇文章
+curl -X POST http://localhost:8000/api/v1/sync/notion \
+  -H "Content-Type: application/json" \
+  -d '{"article_id": 1}'
+
+# 4. 批量同步（未同步的文章）
+curl -X POST http://localhost:8000/api/v1/sync/notion/batch \
+  -H "Content-Type: application/json" \
+  -d '{"limit": 10}'
+```
+
 ---
 
 ## 專案結構
@@ -188,6 +209,9 @@ pytest tests/
 - `POST /api/v1/import/chat` - 匯入 AI 對話
 - `GET /api/v1/search` - 關鍵字搜尋
 - `POST /api/v1/search/semantic` - 語意搜尋
+- `POST /api/v1/sync/notion` - 同步文章到 Notion
+- `POST /api/v1/sync/notion/batch` - 批量同步到 Notion
+- `GET /api/v1/sync/status` - 取得同步狀態
 - `POST /api/v1/chat` - Chat 對話（Phase 4）
 
 ---
@@ -196,7 +220,7 @@ pytest tests/
 
 - [x] Phase 1: 核心基礎（單頁收藏 + Notion 樹狀抓取）
 - [x] Phase 2: 資料收集（批量 + .zip + AI 對話匯入 + 關鍵字搜尋）
-- [ ] Phase 3: 智慧搜尋（向量化 + Notion 同步）
+- [x] Phase 3: 智慧搜尋（向量化 + Notion 同步）
 - [ ] Phase 4: 完整體驗（Chat + Web UI）
 
 ---
@@ -204,7 +228,14 @@ pytest tests/
 ## 版本歷史
 
 ### v0.3.0 (開發中)
-- **語意搜尋（Phase 3 進行中）**
+- **Notion 同步（Phase 3 完成）**
+  - Notion 同步服務（建立/更新頁面）
+  - 同步 API 端點（`POST /sync/notion`）
+  - 批量同步支援（`POST /sync/notion/batch`）
+  - 同步狀態查詢（`GET /sync/status`）
+  - Markdown 轉 Notion blocks
+  - 速率限制處理和重試機制
+- **語意搜尋（Phase 3 完成）**
   - ChromaDB 向量資料庫整合
   - OpenAI Embedding Service
   - 語意搜尋 API (`POST /search/semantic`)
