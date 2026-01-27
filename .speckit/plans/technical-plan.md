@@ -399,6 +399,31 @@ GET    /api/v1/stats                 # 統計資訊
 ✅ 排程自動抓取
 ```
 
+### Phase 5: 多 Provider 支援（Week 9-10）
+
+```
+目標：支援多種 LLM 和 Embedding Provider
+
+任務：
+├── 後端
+│   ├── Provider 抽象層設計
+│   ├── OpenAI Provider 重構
+│   ├── Anthropic Provider 實作
+│   ├── Ollama Provider 實作（本地模型）
+│   ├── Provider 工廠與設定
+│   ├── Service 層重構
+│   └── Provider 健康檢查 API
+│
+└── 前端
+    └── Web UI Provider 設定頁
+
+驗收：
+✅ 可切換 LLM Provider（OpenAI/Anthropic/Ollama）
+✅ 可切換 Embedding Provider（OpenAI/Ollama）
+✅ Web UI 可設定和測試 Provider
+✅ 本地模型可正常運作
+```
+
 ### 4.5 分支規劃對應表
 
 本專案採用 **Phase 直線化開發**，每個 Phase 完成後才能開始下一個。
@@ -415,9 +440,10 @@ GET    /api/v1/stats                 # 統計資訊
 | **2** | `feature/ai-chat-import-seventh` | 2.5~2.7（AI 對話匯入：Claude Code, Cursor） | ~4 hr | 📋 待開始 |
 | **3** | `feature/vector-search-eighth` | 3.1~3.5（ChromaDB + 語意搜尋） | ~8 hr | 📋 待開始 |
 | **3** | `feature/notion-sync-ninth` | 3.6~3.10（Notion 同步 + 認證） | ~7 hr | 📋 待開始 |
-| **4** | `feature/chat-rag-tenth` | 4.1~4.4（RAG + Chat API） | ~8 hr | 📋 待開始 |
-| **4** | `feature/scheduler-eleventh` | 4.5~4.6（排程爬取） | ~4 hr | 📋 待開始 |
-| **4** | `feature/web-ui-twelfth` | 4.7~4.12（Web UI + 整合測試） | ~8 hr | 📋 待開始 |
+| **4** | `feature/chat-rag-tenth` | 4.1~4.4（RAG + Chat API） | ~8 hr | ✅ 完成 |
+| **4** | `feature/scheduler-eleventh` | 4.5~4.6（排程爬取） | ~4 hr | ✅ 完成 |
+| **4** | `feature/web-ui-twelfth` | 4.7~4.12（Web UI + 整合測試） | ~8 hr | 🔄 進行中 |
+| **5** | `feature/multi-provider-thirteenth` | 5.1~5.8（多 Provider 支援） | ~12.5 hr | 📋 待開始 |
 
 #### 開發流程
 
@@ -461,6 +487,7 @@ main ────┬───────────────┼────
 | Phase 2 | Phase 1b 所有 PR 已 merge |
 | Phase 3 | Phase 2 所有 PR 已 merge |
 | Phase 4 | Phase 3 所有 PR 已 merge |
+| Phase 5 | Phase 4 所有 PR 已 merge |
 
 ---
 
@@ -477,14 +504,23 @@ CHROMA_PATH=./data/chroma
 
 # API Keys
 OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...  # Phase 5+
 NOTION_API_KEY=secret_...
 NOTION_DATABASE_ID=...
 
-# 選項
-EMBEDDING_PROVIDER=openai  # or local
-EMBEDDING_MODEL=text-embedding-3-small
+# LLM Provider (openai / anthropic / ollama)
 LLM_PROVIDER=openai
 LLM_MODEL=gpt-4o-mini
+
+# Embedding Provider (openai / ollama)
+EMBEDDING_PROVIDER=openai
+EMBEDDING_MODEL=text-embedding-3-small
+
+# Ollama (本地模型，Phase 5+)
+OLLAMA_BASE_URL=http://localhost:11434
+
+# 選項
+AUTO_EMBED=false  # 新文章自動向量化
 
 # 開發
 DEBUG=true
