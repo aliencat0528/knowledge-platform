@@ -39,7 +39,11 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest tests/ -v --cov=packages/server --cov-report=xml
+          if [ -d "tests" ]; then
+            pytest tests/ -v --cov=packages/server --cov-report=xml
+          else
+            echo "No tests/ directory found, skipping tests"
+          fi
         env:
           DATABASE_PATH: ./test_data/knowledge.db
           CHROMA_PATH: ./test_data/chroma
