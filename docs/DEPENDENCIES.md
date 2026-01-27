@@ -66,12 +66,13 @@
 
 | 套件 | 版本 | 說明 |
 |------|------|------|
-| vite | ^7.2.4 | 建置工具（需 Node.js 20+） |
+| vite | ^5.4.21 | 建置工具（支援 Node.js 18+） |
 | typescript | ~5.9.3 | TypeScript 編譯器 |
 | vue-tsc | ^3.1.4 | Vue TypeScript 檢查 |
-| @vitejs/plugin-vue | ^6.0.1 | Vite Vue 插件 |
+| @vitejs/plugin-vue | ^5.2.4 | Vite Vue 插件 |
 | @vue/tsconfig | ^0.8.1 | Vue TypeScript 設定 |
 | tailwindcss | ^4.1.18 | CSS 框架 |
+| @tailwindcss/postcss | ^4.1.18 | Tailwind PostCSS 插件 |
 | autoprefixer | ^10.4.23 | CSS 前綴處理 |
 | postcss | ^8.5.6 | CSS 處理器 |
 | @types/node | ^24.10.1 | Node.js 型別定義 |
@@ -100,7 +101,7 @@ Chrome Extension 使用原生 JavaScript/TypeScript，無 npm 依賴。
 
 | 工具 | 用途 | 安裝方式 |
 |------|------|----------|
-| Node.js | Web UI 開發 | 需要 v20.19+ 或 v22.12+ |
+| Node.js | Web UI 開發 | 需要 v18.12+ |
 | Python | 後端開發 | 需要 v3.11+ |
 | Git | 版本控制 | - |
 | SQLite | 資料庫 | Python 內建 |
