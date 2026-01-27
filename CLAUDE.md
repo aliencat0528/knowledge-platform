@@ -284,6 +284,9 @@ sqlite3 data/knowledge.db "SELECT id, title FROM articles LIMIT 10"
 | `schema`, `資料庫` | plans/technical-plan |
 | `api`, `端點` | plans/technical-plan, docs/API.md |
 | `npm install`, `pip install`, `依賴`, `套件` | docs/DEPENDENCIES.md |
+| `phase`, `階段`, `新功能模組` | constitution.md, plans/technical-plan |
+| `deploy`, `部署`, `docker`, `ci/cd` | plans/technical-plan, docs/DEPLOYMENT.md |
+| `provider`, `llm`, `embedding` | specs/epic-5, plans/technical-plan |
 
 ---
 
@@ -319,6 +322,16 @@ sqlite3 data/knowledge.db "SELECT id, title FROM articles LIMIT 10"
 □ 是否完成了某個 Task？
   → 更新 `.speckit/tasks/` 對應狀態（📋 → ✅）
   → 確認 Task 輸出檔案都已建立
+
+□ 是否新增了 Phase 或重大功能模組？（必要）
+  → 更新 `.speckit/constitution.md`（Phase 定義表）
+  → 更新 `.speckit/plans/technical-plan.md`（分支規劃表）
+  → 新增對應的 `.speckit/tasks/phase-X-tasks.md`
+
+□ 是否修改了系統架構？
+  → 更新 `.speckit/constitution.md`（架構邊界圖）
+  → 更新 `.speckit/plans/technical-plan.md`（架構圖）
+  → 更新 docs/ARCHITECTURE.md
 ```
 
 ### 違反處理
