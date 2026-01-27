@@ -6,6 +6,13 @@
 ## [Unreleased]
 
 ### Added
+- 資料備份與還原功能
+  - `scripts/backup.py` - 備份 SQLite 和 ChromaDB 到 .tar.gz
+  - `scripts/restore.py` - 從備份還原資料
+  - `docs/BACKUP.md` - 完整備份/還原指南
+- 進階 Health Check 端點
+  - `GET /api/v1/health/ready` - Readiness check（檢查 DB 和 ChromaDB）
+  - `GET /api/v1/health/live` - Liveness check（簡單存活檢查）
 - Notion 擴充套件子頁面功能 (Task 1b.3~1b.6)
   - 子頁面掃描（notion-scanner.js）
   - 樹狀選擇 UI（checkbox 列表、全選/取消）

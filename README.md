@@ -160,6 +160,24 @@ curl http://localhost:8000/api/v1/scheduler/status
 # - "*/30 * * * *"  每 30 分鐘
 ```
 
+### 備份與還原
+
+```bash
+# 建立備份（SQLite + ChromaDB）
+python scripts/backup.py
+
+# 備份到指定目錄
+python scripts/backup.py --output-dir /path/to/backups
+
+# 預覽還原（不實際執行）
+python scripts/restore.py backups/knowledge_backup_xxx.tar.gz --preview
+
+# 執行還原
+python scripts/restore.py backups/knowledge_backup_xxx.tar.gz
+```
+
+詳細說明請參考 [備份與還原指南](docs/BACKUP.md)。
+
 ---
 
 ## 專案結構
@@ -256,6 +274,9 @@ pytest tests/
 - `GET /api/v1/scheduler/status` - 排程器狀態
 - `POST /api/v1/scheduler/start` - 啟動排程器
 - `POST /api/v1/scheduler/stop` - 停止排程器
+- `GET /api/v1/health` - 基本健康檢查
+- `GET /api/v1/health/ready` - Readiness 檢查（驗證 DB 和 ChromaDB）
+- `GET /api/v1/health/live` - Liveness 檢查
 
 ---
 
@@ -271,6 +292,11 @@ pytest tests/
 ## 版本歷史
 
 ### v0.4.0 (開發中)
+- **部署與維運功能**
+  - 備份腳本 (`scripts/backup.py`) - 支援 SQLite 和 ChromaDB
+  - 還原腳本 (`scripts/restore.py`) - 含預覽和驗證
+  - 進階 Health Check 端點（ready、live）
+  - 備份/還原文件 (`docs/BACKUP.md`)
 - **排程爬取（Phase 4 進行中）**
   - 排程服務 (`SchedulerService`) - APScheduler 整合
   - 排程任務 CRUD API 端點

@@ -79,10 +79,87 @@ app.include_router(scheduler_router, prefix="/api/v1")
 app.include_router(providers_router)  # Already has /api/v1/providers prefix
 
 
-@app.get("/api/v1/health", tags=["System"])
+@app.get("/api/v1/health", tags=["Health"])
 async def health_check():
-    """Health check endpoint."""
+    """Basic health check endpoint.
+
+    Returns simple status for basic alive check.
+    """
     return {"status": "ok", "version": "0.1.0"}
+
+
+@app.get("/api/v1/health/ready", tags=["Health"])
+async def readiness_check():
+    """Readiness check endpoint.
+
+    Verifies that the service is ready to accept traffic:
+    - Database connection is active
+    - ChromaDB is accessible
+
+    Used by orchestrators (Zeabur, K8s) to determine if traffic should be routed.
+    """
+    import os
+    from .storage.vector import get_vector_store
+
+    checks = {
+        "database": {"status": "unknown", "message": ""},
+        "chromadb": {"status": "unknown", "message": ""},
+    }
+    all_ready = True
+
+    # Check database connection
+    try:
+        db = await get_db()
+        result = await db.fetchone("SELECT 1 as ping")
+        if result and result["ping"] == 1:
+            checks["database"]["status"] = "ok"
+            checks["database"]["message"] = "Connected"
+        else:
+            checks["database"]["status"] = "error"
+            checks["database"]["message"] = "Query failed"
+            all_ready = False
+    except Exception as e:
+        checks["database"]["status"] = "error"
+        checks["database"]["message"] = str(e)
+        all_ready = False
+
+    # Check ChromaDB
+    try:
+        vector_store = get_vector_store()
+        count = vector_store.count()
+        checks["chromadb"]["status"] = "ok"
+        checks["chromadb"]["message"] = f"Connected, {count} embeddings"
+    except Exception as e:
+        checks["chromadb"]["status"] = "error"
+        checks["chromadb"]["message"] = str(e)
+        all_ready = False
+
+    status_code = 200 if all_ready else 503
+
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": "ready" if all_ready else "not_ready",
+            "checks": checks,
+        }
+    )
+
+
+@app.get("/api/v1/health/live", tags=["Health"])
+async def liveness_check():
+    """Liveness check endpoint.
+
+    Simple check to verify the process is running and responding.
+    Used by orchestrators to determine if the container should be restarted.
+
+    This should always succeed if the server is running.
+    """
+    import time
+    return {
+        "status": "alive",
+        "timestamp": int(time.time()),
+    }
 
 
 @app.get("/api/v1/stats", tags=["System"])
