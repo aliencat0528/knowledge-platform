@@ -443,8 +443,12 @@ GET    /api/v1/stats                 # 統計資訊
 | **4** | `feature/chat-rag-tenth` | 4.1~4.4（RAG + Chat API） | ~8 hr | ✅ 完成 |
 | **4** | `feature/scheduler-eleventh` | 4.5~4.6（排程爬取） | ~4 hr | ✅ 完成 |
 | **4** | `feature/web-ui-twelfth` | 4.7~4.12（Web UI + 整合測試） | ~8 hr | ✅ 完成 |
-| **5** | `feature/multi-provider-thirteenth` | 5.1~5.8（多 Provider 支援） | ~12.5 hr | 📋 待開始 |
+| **5** | `feature/multi-provider-fourteenth` | 5.1~5.8（多 Provider 支援） | ~12.5 hr | 📋 待開始 |
 | **6** | `feature/deployment-thirteenth` | 6.1~6.8（Zeabur 部署 + CI/CD） | ~8 hr | 🔄 進行中 |
+| **7A** | `feature/docker-complete-fifteenth` | 7A.1~7A.6（Docker Compose 完整實作）| ~6 hr | 📋 選用 |
+| **7B** | `feature/terraform-do-sixteenth` | 7B.1~7B.7（Terraform + DigitalOcean）| ~8 hr | 📋 選用 |
+| **7C** | `feature/terraform-cloud-seventeenth` | 7C.1~7C.8（Terraform + AWS/GCP）| ~12 hr | 📋 選用 |
+| **7D** | `feature/monitoring-eighteenth` | 7D.1~7D.7（監控系統）| ~8 hr | 📋 選用 |
 
 #### 開發流程
 
