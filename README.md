@@ -128,6 +128,38 @@ curl -X POST http://localhost:8000/api/v1/sync/notion/batch \
   -d '{"limit": 10}'
 ```
 
+### 排程爬取
+
+```bash
+# 1. 啟動排程器
+curl -X POST http://localhost:8000/api/v1/scheduler/start
+
+# 2. 建立排程任務（每 6 小時執行一次）
+curl -X POST http://localhost:8000/api/v1/scheduler/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "抓取技術部落格",
+    "url_pattern": "https://example.com/blog",
+    "cron_expression": "0 */6 * * *"
+  }'
+
+# 3. 列出所有任務
+curl http://localhost:8000/api/v1/scheduler/tasks
+
+# 4. 手動執行任務
+curl -X POST http://localhost:8000/api/v1/scheduler/tasks/1/run
+
+# 5. 查看排程器狀態
+curl http://localhost:8000/api/v1/scheduler/status
+
+# Cron 表達式格式：分 時 日 月 星期幾
+# 範例：
+# - "0 */6 * * *"   每 6 小時
+# - "30 2 * * *"    每天凌晨 2:30
+# - "0 9 * * 1"     每週一早上 9:00
+# - "*/30 * * * *"  每 30 分鐘
+```
+
 ---
 
 ## 專案結構
@@ -216,6 +248,14 @@ pytest tests/
 - `GET /api/v1/chat/history` - 對話歷史列表
 - `GET /api/v1/chat/history/{id}` - 對話詳情
 - `DELETE /api/v1/chat/history/{id}` - 刪除對話
+- `POST /api/v1/scheduler/tasks` - 建立排程任務
+- `GET /api/v1/scheduler/tasks` - 列出排程任務
+- `PUT /api/v1/scheduler/tasks/{id}` - 更新排程任務
+- `DELETE /api/v1/scheduler/tasks/{id}` - 刪除排程任務
+- `POST /api/v1/scheduler/tasks/{id}/run` - 手動執行任務
+- `GET /api/v1/scheduler/status` - 排程器狀態
+- `POST /api/v1/scheduler/start` - 啟動排程器
+- `POST /api/v1/scheduler/stop` - 停止排程器
 
 ---
 
@@ -231,7 +271,14 @@ pytest tests/
 ## 版本歷史
 
 ### v0.4.0 (開發中)
-- **Chat RAG（Phase 4 進行中）**
+- **排程爬取（Phase 4 進行中）**
+  - 排程服務 (`SchedulerService`) - APScheduler 整合
+  - 排程任務 CRUD API 端點
+  - Cron 表達式支援（分鐘 小時 日 月 星期幾）
+  - 手動執行任務功能
+  - 排程器狀態查詢
+  - URL 自動爬取與儲存
+- **Chat RAG（Phase 4 完成）**
   - RAG 流程（語意搜尋 + LLM）
   - Chat 服務 (`ChatService`)
   - Chat API 端點（`POST /chat`）
