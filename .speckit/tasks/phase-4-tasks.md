@@ -12,8 +12,8 @@
 | 4.2 | Chat Service | `feature/chat-rag-tenth` | ✅ 完成 |
 | 4.3 | Chat API | `feature/chat-rag-tenth` | ✅ 完成 |
 | 4.4 | 對話歷史 | `feature/chat-rag-tenth` | ✅ 完成 |
-| 4.5 | 排程服務 | `feature/scheduler-eleventh` | 📋 待開始 |
-| 4.6 | 排程 API | `feature/scheduler-eleventh` | 📋 待開始 |
+| 4.5 | 排程服務 | `feature/scheduler-eleventh` | ✅ 完成 |
+| 4.6 | 排程 API | `feature/scheduler-eleventh` | ✅ 完成 |
 | 4.7 | Vue 3 專案設定 | `feature/web-ui-twelfth` | 📋 待開始 |
 | 4.8 | 文章列表頁 | `feature/web-ui-twelfth` | 📋 待開始 |
 | 4.9 | 搜尋頁 | `feature/web-ui-twelfth` | 📋 待開始 |
@@ -283,10 +283,10 @@ POST /api/v1/scheduler/tasks/{task_id}/run
 # Phase 4 第二分支完成條件
 
 ```
-□ 可新增排程任務
-□ 排程可定時執行
-□ 可手動觸發任務
-□ 任務執行結果可查詢
+✅ 可新增排程任務
+✅ 排程可定時執行
+✅ 可手動觸發任務
+✅ 任務執行結果可查詢
 ```
 
 ---

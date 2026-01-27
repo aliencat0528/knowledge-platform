@@ -13,6 +13,8 @@ from .api.import_api import router as import_router
 from .api.search import router as search_router
 from .api.sync import router as sync_router
 from .api.chat import router as chat_router
+from .api.scheduler import router as scheduler_router
+from .services.scheduler_service import start_scheduler, stop_scheduler
 from .api.errors import (
     http_exception_handler,
     validation_exception_handler,
@@ -30,8 +32,10 @@ async def lifespan(app: FastAPI):
     print(f"Database: {settings.database_path}")
     print(f"Debug mode: {settings.debug}")
     print(f"API docs: http://{settings.host}:{settings.port}/docs")
+    print(f"Scheduler: Use POST /api/v1/scheduler/start to enable")
     yield
     # Shutdown
+    await stop_scheduler()
     await close_db()
     print("Shutting down...")
 
@@ -70,6 +74,7 @@ app.include_router(import_router, prefix="/api/v1")
 app.include_router(search_router, prefix="/api/v1")
 app.include_router(sync_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
+app.include_router(scheduler_router, prefix="/api/v1")
 
 
 @app.get("/api/v1/health", tags=["System"])

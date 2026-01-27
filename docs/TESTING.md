@@ -183,6 +183,58 @@ curl http://localhost:8000/api/v1/chat/history/{conversation_id}
 curl -X DELETE http://localhost:8000/api/v1/chat/history/{conversation_id}
 ```
 
+### Scheduler API（排程爬取）
+
+```bash
+# 啟動排程器
+curl -X POST http://localhost:8000/api/v1/scheduler/start
+
+# 查看排程器狀態
+curl http://localhost:8000/api/v1/scheduler/status
+
+# 建立排程任務
+curl -X POST http://localhost:8000/api/v1/scheduler/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "每日抓取技術部落格",
+    "url_pattern": "https://example.com/blog",
+    "cron_expression": "0 9 * * *"
+  }'
+
+# 列出所有任務
+curl "http://localhost:8000/api/v1/scheduler/tasks"
+
+# 列出啟用中的任務
+curl "http://localhost:8000/api/v1/scheduler/tasks?active_only=true"
+
+# 取得單一任務
+curl http://localhost:8000/api/v1/scheduler/tasks/1
+
+# 更新任務
+curl -X PUT http://localhost:8000/api/v1/scheduler/tasks/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cron_expression": "0 */6 * * *",
+    "is_active": true
+  }'
+
+# 手動執行任務
+curl -X POST http://localhost:8000/api/v1/scheduler/tasks/1/run
+
+# 刪除任務
+curl -X DELETE http://localhost:8000/api/v1/scheduler/tasks/1
+
+# 停止排程器
+curl -X POST http://localhost:8000/api/v1/scheduler/stop
+
+# Cron 表達式格式：分 時 日 月 星期幾
+# 範例：
+# - "0 */6 * * *"   每 6 小時
+# - "30 2 * * *"    每天凌晨 2:30
+# - "0 9 * * 1"     每週一早上 9:00
+# - "*/30 * * * *"  每 30 分鐘
+```
+
 ---
 
 ## 功能測試檢查清單
@@ -258,6 +310,18 @@ curl -X DELETE http://localhost:8000/api/v1/chat/history/{conversation_id}
 - [ ] `GET /api/v1/chat/history/{id}` 可取得對話詳情
 - [ ] `DELETE /api/v1/chat/history/{id}` 可刪除對話
 - [ ] 對話正確儲存到資料庫
+
+#### 排程爬取
+- [ ] `POST /api/v1/scheduler/start` 可啟動排程器
+- [ ] `POST /api/v1/scheduler/tasks` 可建立任務
+- [ ] `GET /api/v1/scheduler/tasks` 可列出任務
+- [ ] `PUT /api/v1/scheduler/tasks/{id}` 可更新任務
+- [ ] `DELETE /api/v1/scheduler/tasks/{id}` 可刪除任務
+- [ ] `POST /api/v1/scheduler/tasks/{id}/run` 可手動執行
+- [ ] `GET /api/v1/scheduler/status` 顯示正確狀態
+- [ ] Cron 表達式驗證正確
+- [ ] 任務按排程自動執行
+- [ ] 執行結果正確儲存
 
 ---
 
@@ -340,6 +404,12 @@ sqlite3 data/knowledge.db "SELECT COUNT(*) FROM conversations"
 
 # 檢查訊息數量
 sqlite3 data/knowledge.db "SELECT COUNT(*) FROM messages"
+
+# 檢查排程任務數量
+sqlite3 data/knowledge.db "SELECT COUNT(*) FROM scheduled_tasks"
+
+# 檢查啟用中的排程任務
+sqlite3 data/knowledge.db "SELECT COUNT(*) FROM scheduled_tasks WHERE is_active = 1"
 ```
 
 ---
@@ -460,4 +530,4 @@ time curl -X POST http://localhost:8000/api/v1/search/semantic \
 
 ---
 
-> 最後更新：2026-01-27
+> 最後更新：2026-01-27（新增 Scheduler API 測試指令）
