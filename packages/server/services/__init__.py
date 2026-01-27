@@ -3,6 +3,7 @@
 from .import_service import ImportService
 from .embed_service import EmbedService, create_embed_service
 from .notion_sync import NotionSync, NotionSyncError
+from .chat_service import ChatService, ChatServiceError, create_chat_service
 
 __all__ = [
     "ImportService",
@@ -10,4 +11,7 @@ __all__ = [
     "create_embed_service",
     "NotionSync",
     "NotionSyncError",
+    "ChatService",
+    "ChatServiceError",
+    "create_chat_service",
 ]
