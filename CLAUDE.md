@@ -283,6 +283,7 @@ sqlite3 data/knowledge.db "SELECT id, title FROM articles LIMIT 10"
 | `notion`, `同步` | specs/epic-3 |
 | `schema`, `資料庫` | plans/technical-plan |
 | `api`, `端點` | plans/technical-plan, docs/API.md |
+| `npm install`, `pip install`, `依賴`, `套件` | docs/DEPENDENCIES.md |
 
 ---
 
@@ -309,6 +310,7 @@ sqlite3 data/knowledge.db "SELECT id, title FROM articles LIMIT 10"
 
 □ 是否新增了依賴？
   → 更新 requirements.txt 或 package.json
+  → 更新 docs/DEPENDENCIES.md（必要）
   → 更新 README.md 安裝說明
 
 □ 是否為重要里程碑？

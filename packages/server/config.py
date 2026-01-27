@@ -15,8 +15,12 @@ class Settings(BaseSettings):
 
     # API Keys (optional)
     openai_api_key: str | None = None
+    anthropic_api_key: str | None = None
     notion_api_key: str | None = None
     notion_database_id: str | None = None
+
+    # Ollama (local models)
+    ollama_base_url: str = "http://localhost:11434"
 
     # API Authentication (optional)
     api_key: str | None = None
