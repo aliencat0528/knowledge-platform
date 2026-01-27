@@ -1,0 +1,59 @@
+# Deploy to Zeabur Workflow
+# Triggered when code is pushed/merged to main branch
+
+name: Deploy to Zeabur
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    name: Deploy to Zeabur
+    runs-on: ubuntu-latest
+
+    # Only run if tests pass
+    needs: []  # Add 'test-api' and 'build-web' from build.yml if using reusable workflows
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Zeabur
+        uses: zeabur/action-deploy@v0.0.1
+        with:
+          project_id: ${{ secrets.ZEABUR_PROJECT_ID }}
+          service_id: ${{ secrets.ZEABUR_SERVICE_ID }}
+          token: ${{ secrets.ZEABUR_TOKEN }}
+
+      - name: Deployment notification
+        if: success()
+        run: |
+          echo "✅ Deployed successfully to Zeabur"
+          echo "Project: ${{ secrets.ZEABUR_PROJECT_ID }}"
+
+      - name: Deployment failed
+        if: failure()
+        run: |
+          echo "❌ Deployment failed"
+          exit 1
+
+# ============================================
+# Setup Instructions
+# ============================================
+#
+# 1. Create a Zeabur account and project at https://zeabur.com
+#
+# 2. Get your deployment credentials:
+#    - ZEABUR_TOKEN: Go to Settings > Developer > Generate Token
+#    - ZEABUR_PROJECT_ID: Found in project URL or settings
+#    - ZEABUR_SERVICE_ID: Found in service settings
+#
+# 3. Add secrets to GitHub repository:
+#    - Go to Settings > Secrets and variables > Actions
+#    - Add the three secrets above
+#
+# 4. Push to main branch to trigger deployment
+#
+# ============================================

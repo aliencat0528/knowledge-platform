@@ -1,0 +1,92 @@
+# Knowledge Platform - Docker Compose (Production with HTTPS)
+# Usage: docker compose -f docker-compose.prod.yml up -d
+#
+# Prerequisites:
+# 1. Set DOMAIN environment variable
+# 2. Ensure ports 80 and 443 are available
+# 3. Domain DNS points to this server
+
+version: '3.8'
+
+services:
+  # ============================================
+  # API Service
+  # ============================================
+  api:
+    build:
+      context: ..
+      dockerfile: packages/server/Dockerfile
+    container_name: knowledge-api
+    expose:
+      - "8000"
+    volumes:
+      - api_data:/app/data
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - DATABASE_PATH=/app/data/knowledge.db
+      - CHROMA_PATH=/app/data/chroma
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - NOTION_API_KEY=${NOTION_API_KEY:-}
+      - NOTION_DATABASE_ID=${NOTION_DATABASE_ID:-}
+    restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+
+  # ============================================
+  # Web UI Service
+  # ============================================
+  web:
+    build:
+      context: ../packages/web-ui
+      dockerfile: Dockerfile
+    container_name: knowledge-web
+    expose:
+      - "80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: always
+    networks:
+      - internal
+
+  # ============================================
+  # Caddy Reverse Proxy (Auto HTTPS)
+  # ============================================
+  caddy:
+    image: caddy:2-alpine
+    container_name: knowledge-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    depends_on:
+      - api
+      - web
+    restart: always
+    networks:
+      - internal
+
+volumes:
+  api_data:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+
+networks:
+  internal:
+    name: knowledge-internal

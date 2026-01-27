@@ -1,0 +1,33 @@
+{
+  "$schema": "https://zeabur.com/schemas/zeabur.json",
+  "build": {
+    "serverless": false
+  },
+  "services": [
+    {
+      "id": "knowledge-api",
+      "name": "Knowledge API",
+      "template": "DOCKERFILE",
+      "dockerfile": "packages/server/Dockerfile",
+      "ports": [8000],
+      "env": {
+        "ENVIRONMENT": "production",
+        "DEBUG": "false",
+        "DATABASE_PATH": "/app/data/knowledge.db",
+        "CHROMA_PATH": "/app/data/chroma"
+      },
+      "volumes": [
+        {
+          "id": "api-data",
+          "dir": "/app/data"
+        }
+      ],
+      "healthCheck": {
+        "path": "/api/v1/health",
+        "port": 8000,
+        "interval": 30,
+        "timeout": 10
+      }
+    }
+  ]
+}
