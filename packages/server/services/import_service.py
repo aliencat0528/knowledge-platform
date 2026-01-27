@@ -1,10 +1,13 @@
 """Article import service with deduplication logic."""
 
+import asyncio
 import hashlib
 import json
+import logging
 from datetime import datetime
 from typing import Any
 
+from ..config import settings
 from ..storage.database import Database
 from ..storage.models import (
     ArticleCreate,
@@ -15,13 +18,82 @@ from ..storage.models import (
     TreeImportResult,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class ImportService:
     """Service for importing articles with deduplication."""
 
-    def __init__(self, db: Database):
-        """Initialize with database connection."""
+    def __init__(self, db: Database, auto_embed: bool | None = None):
+        """Initialize with database connection.
+
+        Args:
+            db: Database connection.
+            auto_embed: Whether to auto-embed new articles. Defaults to settings.auto_embed.
+        """
         self.db = db
+        self.auto_embed = auto_embed if auto_embed is not None else settings.auto_embed
+        self._embed_service = None
+
+    async def _get_embed_service(self):
+        """Lazily initialize embedding service."""
+        if self._embed_service is None and self.auto_embed:
+            try:
+                from .embed_service import EmbedService
+                self._embed_service = EmbedService()
+            except ValueError as e:
+                logger.warning(f"Auto-embed disabled: {e}")
+                self.auto_embed = False
+        return self._embed_service
+
+    async def _auto_embed_article(
+        self,
+        article_id: int,
+        title: str,
+        content: str,
+        source_type: str,
+        tags: list[str] | None = None,
+    ) -> bool:
+        """Auto-embed an article if enabled.
+
+        Args:
+            article_id: Article ID.
+            title: Article title.
+            content: Article content.
+            source_type: Source type.
+            tags: Optional tags.
+
+        Returns:
+            True if embedded successfully, False otherwise.
+        """
+        if not self.auto_embed:
+            return False
+
+        embed_service = await self._get_embed_service()
+        if not embed_service:
+            return False
+
+        try:
+            await embed_service.embed_article(
+                article_id=article_id,
+                title=title,
+                content=content,
+                metadata={
+                    "source_type": source_type,
+                    "tags": tags or [],
+                },
+            )
+            # Update is_embedded in database
+            await self.db.execute(
+                "UPDATE articles SET is_embedded = 1 WHERE id = ?",
+                (article_id,),
+            )
+            await self.db.commit()
+            logger.info(f"Auto-embedded article {article_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Auto-embed failed for article {article_id}: {e}")
+            return False
 
     @staticmethod
     def calculate_content_hash(content: str) -> str:
@@ -80,6 +152,16 @@ class ImportService:
         if existing is None:
             # New article - INSERT
             article_id = await self._insert_article(article, content_hash)
+
+            # Auto-embed if enabled
+            await self._auto_embed_article(
+                article_id=article_id,
+                title=article.title,
+                content=article.content,
+                source_type=article.source_type.value,
+                tags=article.tags,
+            )
+
             return ImportResultItem(
                 source_id=article.source_id,
                 title=article.title,
@@ -105,6 +187,16 @@ class ImportService:
             existing["content_hash"],
             existing["version"],
         )
+
+        # Re-embed updated article
+        await self._auto_embed_article(
+            article_id=article_id,
+            title=article.title,
+            content=article.content,
+            source_type=article.source_type.value,
+            tags=article.tags,
+        )
+
         return ImportResultItem(
             source_id=article.source_id,
             title=article.title,
