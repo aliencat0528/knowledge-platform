@@ -1,0 +1,161 @@
+# Cursor Rules (Project: Knowledge Platform)
+# Inherits: Global Golden Standard (../CLAUDE.md)
+# Extends: Local Project Rules (CLAUDE.md)
+
+# =============================================================================
+# 🌐 MULTI-MODEL COMPATIBILITY
+# =============================================================================
+
+## Supported AI Tools
+- **Antigravity** (Google) - 超長上下文，適合理解此 monorepo 結構
+- **Cursor** (Native) - 日常開發首選
+- **Claude Code** (CLI) - 自動化任務
+- **Aider** (Open Source) - 批次重構，最省錢
+
+## Model Switching for This Project
+```yaml
+理解整體架構: Antigravity / Claude Opus（長上下文）
+日常編碼: Cursor + Sonnet
+API 開發: Claude Code（批次測試）
+批次重構: Aider + DeepSeek API（最省）
+```
+
+## Code Style Consistency
+```yaml
+naming:
+  python_functions: snake_case          # ✅ Overrides root (Python-specific)
+  python_classes: PascalCase
+  js_functions: camelCase               # Matches root standard
+  js_components: PascalCase             # Matches root standard
+formatting:
+  python: black, ruff
+  js/ts: prettier, eslint
+  indentation: 4 spaces (Python), 2 spaces (JS)  # ✅ Python override: 4 spaces
+```
+
+# =============================================================================
+# 🚨 PROJECT-SPECIFIC RULES (HIGHEST PRIORITY)
+# =============================================================================
+
+## Project Overview
+Personal knowledge management platform integrating multiple sources.
+- **Tech Stack**: Python FastAPI + SQLite + ChromaDB + Chrome Extension
+- **Architecture**: Monorepo (packages/)
+
+## Project-Specific Commit Scopes
+`server`, `extension`, `storage`, `parser`, `search`, `chat`, `notion`, `web-ui`
+
+**Examples**:
+- `feat(server): add articles API endpoint`
+- `fix(extension): resolve content extraction issue`
+- `refactor(parser): optimize Notion parser`
+
+## Spec-Driven Development (Speckit)
+**Workflow**: `Constitution → Specs → Plans → Tasks → Code`
+1. Check `.speckit/constitution.md` (Rules)
+2. Check `.speckit/specs/` (Functional Specs)
+3. Check `.speckit/plans/` (Tech Plans)
+4. Check `.speckit/tasks/` (Task List)
+5. Implement Task
+
+**Key Principles**:
+- **Read Specs First**: Never code without understanding the Spec
+- **Local First**: Prioritize local data storage
+- **De-duplication**: `source_type + source_id` is unique identifier
+
+## Phase Linear Development (Strict)
+Finish current phase completely before the next.
+
+### Branch Naming Rules
+| Type | Sequence | Description |
+|------|----------|-------------|
+| `feature/` | Phase sequence (`sec`, `third`, ...) | Follows Phase order |
+| `fix/` | Independent (`first`, `sec`, ...) | Starts from `first` |
+| `docs/` | Independent (`first`, `sec`, ...) | Starts from `first` |
+
+## Development Commands
+```bash
+# Server
+cd packages/server && uvicorn main:app --reload
+
+# Extension
+cd packages/extension && npm run dev
+
+# Tests
+pytest tests/
+
+# Import
+python scripts/import_zip.py <path>
+```
+
+## Documentation Triggers (Commit Pre-Check)
+Before **EVERY** commit:
+- [ ] Added feature? → Update README, CHANGELOG
+- [ ] New Phase/Module? → Update `.speckit/constitution.md` & `.speckit/plans/`
+- [ ] Changed Architecture? → Update `docs/ARCHITECTURE.md`
+- [ ] Completed Task? → Mark as ✅ in `.speckit/tasks/`
+- [ ] New API endpoint? → Update API docs
+
+# =============================================================================
+# 🔽 GLOBAL SHARED RULES (INHERITED)
+# =============================================================================
+
+## Git Workflow
+- **Commit**: Per milestone, Conventional Commits format
+- **Flow**: `Implement → Auto Commit → Auto Push → Auto PR → [Manual Merge]`
+- **PR Standards**: Title and Description in **繁體中文**
+- ⚠️ **NEVER** auto-merge or push directly to `main`
+
+## Mandatory Test Flow Report
+```markdown
+### 🧪 Test Flow Report
+1. **Setup**: [Commands to prepare environment]
+2. **Execution**: [CLI/API/Browser actions]
+3. **Expected**: [What should happen?]
+4. **Verification**: [SQL query, API check]
+```
+
+## Safety & Quality
+- **Data Safety**: NEVER edit binary/auto-generated files (SQLite, ChromaDB) manually
+- **Secrets**: NEVER commit `.env` files
+- **Language**: Always respond in **繁體中文**
+- **Linting**: Python: `ruff check`, JS: `npm run lint`
+
+## Bug Fix Workflow
+1. Check current branch for uncommitted changes (commit/stash first if needed)
+2. Create fix branch: `git checkout main && git checkout -b fix/<name>-<version>`
+3. Fix → commit → push → PR
+4. After merge: `git checkout <original-branch> && git rebase main`
+5. Continue original development
+
+## Session Recovery
+When resuming development:
+```bash
+git branch --show-current
+git status
+git log --oneline -5
+git stash list
+```
+
+## WIP Commits (Optional)
+```
+feat(component): WIP - feature 50% complete
+
+[WIP] indicates in-progress
+Next: complete XYZ integration
+```
+
+## Command Reference
+| Command | 中文 | Description |
+|---|---|---|
+| `switch branch` | `切換分支` | Create new branch |
+| `pause auto` | `暫停自動化` | Pause automation |
+| `resume auto` | `恢復自動化` | Resume automation |
+| `create PR` | `發 PR` | Trigger PR |
+| `commit only` | `只做到 commit` | Only commit, no push/PR |
+| `skip readme` | `跳過 README 更新` | Skip README update |
+| `init architecture` | `建立架構文件` | Create docs/ARCHITECTURE.md |
+| `update architecture` | `更新架構` | Update ARCHITECTURE.md |
+| `show architecture` | `檢視架構` | Display architecture summary |
+| `skip docs` | `跳過文件更新` | Skip docs/ update |
+| `continue previous` | `繼續上次開發` | Resume session |
