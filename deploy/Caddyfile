@@ -1,0 +1,45 @@
+# Knowledge Platform - Caddy Configuration
+# Automatic HTTPS with Let's Encrypt
+
+{$DOMAIN:localhost} {
+    # Enable compression
+    encode gzip
+
+    # API routes
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+
+    # Health check (bypass auth if needed)
+    handle /api/v1/health* {
+        reverse_proxy api:8000
+    }
+
+    # Frontend (SPA)
+    handle {
+        reverse_proxy web:80
+    }
+
+    # Logging
+    log {
+        output stdout
+        format console
+    }
+
+    # Security headers
+    header {
+        # Enable HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # XSS protection
+        X-Content-Type-Options "nosniff"
+        # Remove server header
+        -Server
+    }
+}
+
+# Health check endpoint for monitoring
+:8080 {
+    respond /health "OK" 200
+}

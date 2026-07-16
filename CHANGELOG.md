@@ -6,6 +6,21 @@
 ## [Unreleased]
 
 ### Added
+- Phase 6 部署基礎設施
+  - `zeabur.json` - Zeabur 服務設定檔
+  - `packages/server/Dockerfile`、`packages/web-ui/Dockerfile` - 多階段容器建置
+  - `.dockerignore`、`.env.production.example` - 生產環境設定
+  - `deploy/` - Docker Compose（dev/prod）、Caddyfile、Terraform 規劃
+  - `.github/workflows/build.yml`、`deploy.yml` - CI/CD Pipeline
+  - `docs/DEPLOYMENT.md` - 部署指南
+  - 生產環境安全強化：`config.py` 新增 `is_production`，`ENVIRONMENT=production` 時關閉 `/docs`、`/redoc`、`/openapi.json` 並隱藏 `database_path` 等敏感資訊
+- 資料備份與還原功能
+  - `scripts/backup.py` - 備份 SQLite 和 ChromaDB 到 .tar.gz
+  - `scripts/restore.py` - 從備份還原資料
+  - `docs/BACKUP.md` - 完整備份/還原指南
+- 進階 Health Check 端點
+  - `GET /api/v1/health/ready` - Readiness check（檢查 DB 和 ChromaDB）
+  - `GET /api/v1/health/live` - Liveness check（簡單存活檢查）
 - Notion 擴充套件子頁面功能 (Task 1b.3~1b.6)
   - 子頁面掃描（notion-scanner.js）
   - 樹狀選擇 UI（checkbox 列表、全選/取消）

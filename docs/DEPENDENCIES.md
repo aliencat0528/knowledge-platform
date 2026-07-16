@@ -108,7 +108,37 @@ Chrome Extension 使用原生 JavaScript/TypeScript，無 npm 依賴。
 
 ---
 
-## 5. 外部服務依賴
+## 5. 部署工具（Phase 6）
+
+### 容器化
+
+| 工具 | 版本 | 用途 |
+|------|------|------|
+| Docker | 24+ | 容器運行環境 |
+| Docker Compose | 2.20+ | 多容器編排 |
+
+### CI/CD
+
+| 服務 | 用途 | 設定檔 |
+|------|------|--------|
+| GitHub Actions | 自動建置與測試 | `.github/workflows/build.yml` |
+| Zeabur | 部署平台 | `zeabur.json` |
+
+### 反向代理（自架選用）
+
+| 工具 | 版本 | 用途 |
+|------|------|------|
+| Caddy | 2.x | 反向代理 + 自動 HTTPS |
+
+### 基礎設施即代碼（進階選用）
+
+| 工具 | 版本 | 用途 |
+|------|------|------|
+| Terraform | 1.5+ | 雲端資源佈建 |
+
+---
+
+## 6. 外部服務依賴
 
 | 服務 | 用途 | 必要性 | 設定方式 |
 |------|------|--------|----------|
@@ -116,6 +146,7 @@ Chrome Extension 使用原生 JavaScript/TypeScript，無 npm 依賴。
 | Anthropic API | LLM（Phase 5） | 選用 | `ANTHROPIC_API_KEY` |
 | Notion API | 同步到 Notion | 選用 | `NOTION_API_KEY` |
 | Ollama | 本地模型（Phase 5） | 選用 | `OLLAMA_BASE_URL` |
+| Zeabur | 部署平台（Phase 6） | 選用 | `ZEABUR_TOKEN` |
 
 ---
 
@@ -123,6 +154,7 @@ Chrome Extension 使用原生 JavaScript/TypeScript，無 npm 依賴。
 
 | 日期 | 變更 |
 |------|------|
+| 2026-01-27 | 新增 Phase 6 部署工具依賴 |
 | 2026-01-27 | 初始版本，包含 Phase 1-4 所有依賴 |
 
 ---

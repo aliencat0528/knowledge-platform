@@ -442,8 +442,13 @@ GET    /api/v1/stats                 # 統計資訊
 | **3** | `feature/notion-sync-ninth` | 3.6~3.10（Notion 同步 + 認證） | ~7 hr | 📋 待開始 |
 | **4** | `feature/chat-rag-tenth` | 4.1~4.4（RAG + Chat API） | ~8 hr | ✅ 完成 |
 | **4** | `feature/scheduler-eleventh` | 4.5~4.6（排程爬取） | ~4 hr | ✅ 完成 |
-| **4** | `feature/web-ui-twelfth` | 4.7~4.12（Web UI + 整合測試） | ~8 hr | 🔄 進行中 |
-| **5** | `feature/multi-provider-thirteenth` | 5.1~5.8（多 Provider 支援） | ~12.5 hr | 📋 待開始 |
+| **4** | `feature/web-ui-twelfth` | 4.7~4.12（Web UI + 整合測試） | ~8 hr | ✅ 完成 |
+| **5** | `feature/multi-provider-fourteenth` | 5.1~5.8（多 Provider 支援） | ~12.5 hr | 📋 待開始 |
+| **6** | `feature/deployment-thirteenth` | 6.1~6.8（Zeabur 部署 + CI/CD） | ~8 hr | 🔄 進行中 |
+| **7A** | `feature/docker-complete-fifteenth` | 7A.1~7A.6（Docker Compose 完整實作）| ~6 hr | 📋 選用 |
+| **7B** | `feature/terraform-do-sixteenth` | 7B.1~7B.7（Terraform + DigitalOcean）| ~8 hr | 📋 選用 |
+| **7C** | `feature/terraform-cloud-seventeenth` | 7C.1~7C.8（Terraform + AWS/GCP）| ~12 hr | 📋 選用 |
+| **7D** | `feature/monitoring-eighteenth` | 7D.1~7D.7（監控系統）| ~8 hr | 📋 選用 |
 
 #### 開發流程
 
@@ -488,6 +493,8 @@ main ────┬───────────────┼────
 | Phase 3 | Phase 2 所有 PR 已 merge |
 | Phase 4 | Phase 3 所有 PR 已 merge |
 | Phase 5 | Phase 4 所有 PR 已 merge |
+| Phase 6 | Phase 4 Web UI 完成（可與 Phase 5 平行） |
+| Phase 7 | Phase 6 完成後選擇（進階部署選項） |
 
 ---
 
@@ -700,4 +707,120 @@ def test_import_update_on_change():
     # 修改後匯入
     result = service.import_article(content="Version 2")
     assert result.status == "updated"
+```
+
+---
+
+## 8. 部署架構
+
+### Phase 6: 部署與 DevOps
+
+```
+目標：部署到 Zeabur，建立 CI/CD 流程
+
+任務：
+├── 部署設定
+│   ├── zeabur.json 設定檔
+│   ├── Dockerfile（多階段建置）
+│   └── 環境變數管理
+│
+├── CI/CD
+│   ├── GitHub Actions Build
+│   └── 自動部署到 Zeabur
+│
+├── 維運
+│   ├── 健康檢查強化
+│   └── 資料備份機制
+│
+└── 進階規劃
+    ├── Docker Compose（自架方案）
+    └── Terraform（雲端方案）
+
+驗收：
+✅ Zeabur 部署成功
+✅ PR merge 後自動部署
+✅ 健康檢查正常
+✅ 備份機制可用
+```
+
+### 8.1 部署架構圖
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              Production Environment                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │                         Zeabur Platform                              │   │
+│   │                                                                      │   │
+│   │   ┌─────────────────┐        ┌─────────────────┐                    │   │
+│   │   │   knowledge-api │        │  knowledge-web  │                    │   │
+│   │   │   (Container)   │        │    (Static)     │                    │   │
+│   │   │                 │        │                 │                    │   │
+│   │   │   FastAPI       │◄──────►│   Vue 3 SPA     │                    │   │
+│   │   │   Port 8000     │        │   Port 80       │                    │   │
+│   │   │                 │        │                 │                    │   │
+│   │   └────────┬────────┘        └─────────────────┘                    │   │
+│   │            │                                                         │   │
+│   │            ▼                                                         │   │
+│   │   ┌─────────────────┐                                               │   │
+│   │   │     Volume      │                                               │   │
+│   │   │  /app/data      │                                               │   │
+│   │   │                 │                                               │   │
+│   │   │  • knowledge.db │                                               │   │
+│   │   │  • chroma/      │                                               │   │
+│   │   └─────────────────┘                                               │   │
+│   │                                                                      │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│                              ┌─────────────┐                                │
+│                              │   Secrets   │                                │
+│                              │             │                                │
+│                              │ OPENAI_KEY  │                                │
+│                              │ NOTION_KEY  │                                │
+│                              └─────────────┘                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      │ GitHub Actions
+                                      │
+┌─────────────────────────────────────┴───────────────────────────────────────┐
+│                                CI/CD Pipeline                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   ┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐        │
+│   │   Push    │───►│   Build   │───►│   Test    │───►│  Deploy   │        │
+│   │           │    │           │    │           │    │           │        │
+│   │  PR/Main  │    │  Docker   │    │  pytest   │    │  Zeabur   │        │
+│   │           │    │  Vue      │    │  vue-tsc  │    │  Action   │        │
+│   └───────────┘    └───────────┘    └───────────┘    └───────────┘        │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 8.2 部署方式比較
+
+| 方式 | 複雜度 | 成本 | 適用場景 | 狀態 |
+|------|--------|------|----------|------|
+| **Zeabur** | ⭐ | $5-15/月 | 快速上線 | Phase 6 實作 |
+| **Docker Compose** | ⭐⭐ | $5-10/月 | 自架 VPS | Phase 6 規劃 |
+| **Terraform** | ⭐⭐⭐ | 變動 | 多環境 | Phase 7 選項 |
+| **Kubernetes** | ⭐⭐⭐⭐⭐ | $50+/月 | 大規模 | 未來選項 |
+
+### 8.3 進階擴展路線
+
+```
+Phase 6（目前）：Zeabur 單機部署
+     │
+     ▼
+Phase 7（選項）：
+     │
+     ├──► 7A: Docker Compose + VPS
+     │         └── 適合：自主控制、固定成本
+     │
+     ├──► 7B: Terraform + DigitalOcean
+     │         └── 適合：自動化、多環境
+     │
+     └──► 7C: Terraform + AWS/GCP
+               └── 適合：企業級、高可用
 ```

@@ -40,10 +40,18 @@ class Settings(BaseSettings):
     debug: bool = False
     log_level: str = "INFO"
 
+    # Deployment environment ("development" | "production")
+    environment: str = "development"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
         extra = "ignore"
+
+    @property
+    def is_production(self) -> bool:
+        """Whether the app is running in a production environment."""
+        return self.environment.lower() == "production"
 
     @property
     def database_url(self) -> str:

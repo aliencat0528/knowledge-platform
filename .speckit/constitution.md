@@ -142,6 +142,11 @@
 │  ├── Semantic Search                                        │
 │  └── Chat（RAG + LLM）                                      │
 │                                                             │
+│  部署層（Deployment）                                        │
+│  ├── Docker Container                                       │
+│  ├── Zeabur / VPS                                          │
+│  └── CI/CD（GitHub Actions）                                │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -188,6 +193,9 @@
 | Phase 2 | 資料收集完整 | 批量 + 樹狀 + .zip 匯入 + 去重 |
 | Phase 3 | 智慧搜尋 | 向量化 + 語意搜尋 + Notion 同步 |
 | Phase 4 | 完整體驗 | Chat + Web UI + 排程爬取 |
+| Phase 5 | 多 Provider | OpenAI + Anthropic + Ollama 支援 |
+| Phase 6 | 部署上線 | Zeabur + Docker + CI/CD |
+| Phase 7 | 進階部署（選用）| Terraform + 雲端自動化 |
 
 ### 5.2 MVP 定義（Phase 1 完成時）
 

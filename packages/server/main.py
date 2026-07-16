@@ -6,21 +6,21 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
-from .config import settings
-from .storage.database import init_db, close_db, get_db
 from .api.articles import router as articles_router
-from .api.import_api import router as import_router
-from .api.search import router as search_router
-from .api.sync import router as sync_router
 from .api.chat import router as chat_router
-from .api.scheduler import router as scheduler_router
-from .api.providers import router as providers_router
-from .services.scheduler_service import start_scheduler, stop_scheduler
 from .api.errors import (
+    general_exception_handler,
     http_exception_handler,
     validation_exception_handler,
-    general_exception_handler,
 )
+from .api.import_api import router as import_router
+from .api.providers import router as providers_router
+from .api.scheduler import router as scheduler_router
+from .api.search import router as search_router
+from .api.sync import router as sync_router
+from .config import settings
+from .services.scheduler_service import stop_scheduler
+from .storage.database import close_db, get_db, init_db
 
 
 @asynccontextmanager
@@ -29,11 +29,15 @@ async def lifespan(app: FastAPI):
     # Startup
     settings.ensure_data_dir()
     await init_db()
-    print(f"Starting Knowledge Platform Server v0.1.0")
-    print(f"Database: {settings.database_path}")
-    print(f"Debug mode: {settings.debug}")
-    print(f"API docs: http://{settings.host}:{settings.port}/docs")
-    print(f"Scheduler: Use POST /api/v1/scheduler/start to enable")
+    print("Starting Knowledge Platform Server v0.1.0")
+    print(f"Environment: {settings.environment}")
+    if settings.is_production:
+        print("Database: [hidden in production]")
+    else:
+        print(f"Database: {settings.database_path}")
+        print(f"Debug mode: {settings.debug}")
+        print(f"API docs: http://{settings.host}:{settings.port}/docs")
+    print("Scheduler: Use POST /api/v1/scheduler/start to enable")
     yield
     # Shutdown
     await stop_scheduler()
@@ -41,13 +45,14 @@ async def lifespan(app: FastAPI):
     print("Shutting down...")
 
 
+# Hide API schema/docs endpoints in production
 app = FastAPI(
     title="Knowledge Platform API",
     description="個人知識管理平台 API - 整合多種來源的技術文章與筆記",
     version="0.1.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
     lifespan=lifespan,
 )
 
@@ -79,10 +84,86 @@ app.include_router(scheduler_router, prefix="/api/v1")
 app.include_router(providers_router)  # Already has /api/v1/providers prefix
 
 
-@app.get("/api/v1/health", tags=["System"])
+@app.get("/api/v1/health", tags=["Health"])
 async def health_check():
-    """Health check endpoint."""
+    """Basic health check endpoint.
+
+    Returns simple status for basic alive check.
+    """
     return {"status": "ok", "version": "0.1.0"}
+
+
+@app.get("/api/v1/health/ready", tags=["Health"])
+async def readiness_check():
+    """Readiness check endpoint.
+
+    Verifies that the service is ready to accept traffic:
+    - Database connection is active
+    - ChromaDB is accessible
+
+    Used by orchestrators (Zeabur, K8s) to determine if traffic should be routed.
+    """
+    from .storage.vector import get_vector_store
+
+    checks = {
+        "database": {"status": "unknown", "message": ""},
+        "chromadb": {"status": "unknown", "message": ""},
+    }
+    all_ready = True
+
+    # Check database connection
+    try:
+        db = await get_db()
+        result = await db.fetchone("SELECT 1 as ping")
+        if result and result["ping"] == 1:
+            checks["database"]["status"] = "ok"
+            checks["database"]["message"] = "Connected"
+        else:
+            checks["database"]["status"] = "error"
+            checks["database"]["message"] = "Query failed"
+            all_ready = False
+    except Exception as e:
+        checks["database"]["status"] = "error"
+        checks["database"]["message"] = str(e)
+        all_ready = False
+
+    # Check ChromaDB
+    try:
+        vector_store = get_vector_store()
+        count = vector_store.count()
+        checks["chromadb"]["status"] = "ok"
+        checks["chromadb"]["message"] = f"Connected, {count} embeddings"
+    except Exception as e:
+        checks["chromadb"]["status"] = "error"
+        checks["chromadb"]["message"] = str(e)
+        all_ready = False
+
+    status_code = 200 if all_ready else 503
+
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": "ready" if all_ready else "not_ready",
+            "checks": checks,
+        }
+    )
+
+
+@app.get("/api/v1/health/live", tags=["Health"])
+async def liveness_check():
+    """Liveness check endpoint.
+
+    Simple check to verify the process is running and responding.
+    Used by orchestrators to determine if the container should be restarted.
+
+    This should always succeed if the server is running.
+    """
+    import time
+    return {
+        "status": "alive",
+        "timestamp": int(time.time()),
+    }
 
 
 @app.get("/api/v1/stats", tags=["System"])
@@ -111,14 +192,17 @@ async def get_stats():
         else:
             db_size = f"{size_bytes / (1024 * 1024):.1f} MB"
 
-    return {
+    stats = {
         "status": "ok",
         "articles_count": article_result["total"] if article_result else 0,
         "embedded_count": article_result["embedded"] if article_result else 0,
         "conversations_count": conv_result["total"] if conv_result else 0,
         "database_size": db_size,
-        "database_path": settings.database_path,
     }
+    # Expose filesystem path only outside production
+    if not settings.is_production:
+        stats["database_path"] = settings.database_path
+    return stats
 
 
 def run():
