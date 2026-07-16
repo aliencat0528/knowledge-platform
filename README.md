@@ -278,6 +278,29 @@ pytest tests/
 - `GET /api/v1/health/ready` - Readiness 檢查（驗證 DB 和 ChromaDB）
 - `GET /api/v1/health/live` - Liveness 檢查
 
+> 生產環境（`ENVIRONMENT=production`）會自動關閉 `/docs`、`/redoc`、`/openapi.json` 並隱藏敏感資訊。
+
+---
+
+## 部署
+
+支援 Zeabur 一鍵部署與 Docker 自架，完整步驟請參考 [部署指南](docs/DEPLOYMENT.md)。
+
+```bash
+# 方式一：Zeabur（推薦）
+# 連結 GitHub Repository 後，Zeabur 依 zeabur.json 自動部署
+
+# 方式二：Docker Compose（自架）
+docker compose -f deploy/docker-compose.prod.yml up -d
+
+# 方式三：單獨建置後端映像
+docker build -f packages/server/Dockerfile -t knowledge-api .
+docker run -p 8000:8000 -v $(pwd)/data:/app/data knowledge-api
+```
+
+生產環境需設定的環境變數見 [`.env.production.example`](.env.production.example)；
+CI/CD 由 `.github/workflows/`（PR 時建置測試、merge main 時部署）自動執行。
+
 ---
 
 ## 開發階段
@@ -285,7 +308,9 @@ pytest tests/
 - [x] Phase 1: 核心基礎（單頁收藏 + Notion 樹狀抓取）
 - [x] Phase 2: 資料收集（批量 + .zip + AI 對話匯入 + 關鍵字搜尋）
 - [x] Phase 3: 智慧搜尋（向量化 + Notion 同步）
-- [ ] Phase 4: 完整體驗（Chat + Web UI）
+- [x] Phase 4: 完整體驗（Chat + Web UI）
+- [x] Phase 5: 多來源整合（多 Provider 支援）
+- [x] Phase 6: 部署與 DevOps（Zeabur / Docker / CI-CD / 備份）
 
 ---
 
