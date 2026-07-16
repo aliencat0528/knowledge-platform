@@ -6,21 +6,21 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
-from .config import settings
-from .storage.database import init_db, close_db, get_db
 from .api.articles import router as articles_router
-from .api.import_api import router as import_router
-from .api.search import router as search_router
-from .api.sync import router as sync_router
 from .api.chat import router as chat_router
-from .api.scheduler import router as scheduler_router
-from .api.providers import router as providers_router
-from .services.scheduler_service import start_scheduler, stop_scheduler
 from .api.errors import (
+    general_exception_handler,
     http_exception_handler,
     validation_exception_handler,
-    general_exception_handler,
 )
+from .api.import_api import router as import_router
+from .api.providers import router as providers_router
+from .api.scheduler import router as scheduler_router
+from .api.search import router as search_router
+from .api.sync import router as sync_router
+from .config import settings
+from .services.scheduler_service import stop_scheduler
+from .storage.database import close_db, get_db, init_db
 
 
 @asynccontextmanager
@@ -29,11 +29,11 @@ async def lifespan(app: FastAPI):
     # Startup
     settings.ensure_data_dir()
     await init_db()
-    print(f"Starting Knowledge Platform Server v0.1.0")
+    print("Starting Knowledge Platform Server v0.1.0")
     print(f"Database: {settings.database_path}")
     print(f"Debug mode: {settings.debug}")
     print(f"API docs: http://{settings.host}:{settings.port}/docs")
-    print(f"Scheduler: Use POST /api/v1/scheduler/start to enable")
+    print("Scheduler: Use POST /api/v1/scheduler/start to enable")
     yield
     # Shutdown
     await stop_scheduler()
@@ -98,7 +98,6 @@ async def readiness_check():
 
     Used by orchestrators (Zeabur, K8s) to determine if traffic should be routed.
     """
-    import os
     from .storage.vector import get_vector_store
 
     checks = {

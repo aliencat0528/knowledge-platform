@@ -19,7 +19,6 @@ Examples:
 """
 
 import argparse
-import os
 import shutil
 import sys
 import tarfile
@@ -266,12 +265,12 @@ def main():
     print(f"Archive size: {archive_path.stat().st_size / (1024 * 1024):.2f} MB")
 
     # List archive contents
-    print(f"\nArchive contents:")
+    print("\nArchive contents:")
     contents = list_archive_contents(archive_path)
     for item in contents:
         print(f"  - {item}")
 
-    print(f"\nTarget paths:")
+    print("\nTarget paths:")
     print(f"  Database: {settings.database_path}")
     print(f"  ChromaDB: {settings.chroma_path}")
 
@@ -292,14 +291,14 @@ def main():
 
     # Backup current data
     if not args.no_backup:
-        print(f"\nBacking up current data...")
+        print("\nBacking up current data...")
         backup_dir = Path("./backups/pre_restore")
         current_backups = backup_current_data(backup_dir)
         if any(current_backups.values()):
             print(f"  Pre-restore backups saved to: {backup_dir.absolute()}")
 
     # Extract archive
-    print(f"\nExtracting archive...")
+    print("\nExtracting archive...")
     temp_dir = Path(f"./backups/temp_restore_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
 
     try:
@@ -307,7 +306,7 @@ def main():
         print(f"  [OK] Extracted {len(extracted_files)} items")
 
         # Restore
-        print(f"\nRestoring data...")
+        print("\nRestoring data...")
         db_restored = restore_database(temp_dir)
         chroma_restored = restore_chromadb(temp_dir)
 
@@ -317,7 +316,7 @@ def main():
 
         # Verify
         if not args.no_verify:
-            print(f"\nVerifying restored data...")
+            print("\nVerifying restored data...")
             results = verify_restore()
             for name, result in results.items():
                 status = result["status"]

@@ -16,7 +16,6 @@ Examples:
 """
 
 import argparse
-import os
 import shutil
 import sys
 import tarfile
@@ -133,7 +132,7 @@ def verify_backup(archive_path: Path) -> bool:
     try:
         with tarfile.open(archive_path, "r:gz") as tar:
             members = tar.getnames()
-            print(f"\n  Archive contents:")
+            print("\n  Archive contents:")
             for member in members:
                 print(f"    - {member}")
             return len(members) > 0
@@ -181,12 +180,12 @@ def main():
 
     print(f"\nTimestamp: {timestamp}")
     print(f"Output directory: {output_dir.absolute()}")
-    print(f"\nSource paths:")
+    print("\nSource paths:")
     print(f"  Database: {settings.database_path}")
     print(f"  ChromaDB: {settings.chroma_path}")
 
     # Backup files
-    print(f"\nBacking up...")
+    print("\nBacking up...")
     backed_up_files: list[Path] = []
 
     db_backup = backup_database(temp_dir, timestamp)
@@ -203,7 +202,7 @@ def main():
         sys.exit(1)
 
     # Create archive
-    print(f"\nCreating archive...")
+    print("\nCreating archive...")
     archive_name = get_backup_name(timestamp)
     archive_path = output_dir / archive_name
 
@@ -211,7 +210,7 @@ def main():
 
     # Verify
     if not args.no_verify:
-        print(f"\nVerifying archive...")
+        print("\nVerifying archive...")
         if verify_backup(archive_path):
             print("  [OK] Archive verified successfully")
         else:
