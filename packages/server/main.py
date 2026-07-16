@@ -30,9 +30,13 @@ async def lifespan(app: FastAPI):
     settings.ensure_data_dir()
     await init_db()
     print("Starting Knowledge Platform Server v0.1.0")
-    print(f"Database: {settings.database_path}")
-    print(f"Debug mode: {settings.debug}")
-    print(f"API docs: http://{settings.host}:{settings.port}/docs")
+    print(f"Environment: {settings.environment}")
+    if settings.is_production:
+        print("Database: [hidden in production]")
+    else:
+        print(f"Database: {settings.database_path}")
+        print(f"Debug mode: {settings.debug}")
+        print(f"API docs: http://{settings.host}:{settings.port}/docs")
     print("Scheduler: Use POST /api/v1/scheduler/start to enable")
     yield
     # Shutdown
@@ -41,13 +45,14 @@ async def lifespan(app: FastAPI):
     print("Shutting down...")
 
 
+# Hide API schema/docs endpoints in production
 app = FastAPI(
     title="Knowledge Platform API",
     description="個人知識管理平台 API - 整合多種來源的技術文章與筆記",
     version="0.1.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
     lifespan=lifespan,
 )
 
@@ -187,14 +192,17 @@ async def get_stats():
         else:
             db_size = f"{size_bytes / (1024 * 1024):.1f} MB"
 
-    return {
+    stats = {
         "status": "ok",
         "articles_count": article_result["total"] if article_result else 0,
         "embedded_count": article_result["embedded"] if article_result else 0,
         "conversations_count": conv_result["total"] if conv_result else 0,
         "database_size": db_size,
-        "database_path": settings.database_path,
     }
+    # Expose filesystem path only outside production
+    if not settings.is_production:
+        stats["database_path"] = settings.database_path
+    return stats
 
 
 def run():
