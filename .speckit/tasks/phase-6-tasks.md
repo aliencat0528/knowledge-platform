@@ -10,19 +10,20 @@
 |------|------|------|------|
 | 6.1 | Zeabur 專案設定 | `feature/deployment-thirteenth` | ✅ 完成 |
 | 6.2 | Dockerfile 撰寫 | `feature/deployment-thirteenth` | ✅ 完成 |
-| 6.3 | 環境變數管理 | `feature/deployment-thirteenth` | ⚠️ 部分（見註 1）|
+| 6.3 | 環境變數管理 | `feature/deployment-thirteenth` | ✅ 完成 |
 | 6.4 | CI/CD Pipeline | `feature/deployment-thirteenth` | ✅ 完成 |
-| 6.5 | 健康檢查與監控 | `feature/deployment-thirteenth` | ✅ 完成（見註 2）|
+| 6.5 | 健康檢查與監控 | `feature/deployment-thirteenth` | ✅ 完成（見註 1）|
 | 6.6 | 資料備份機制 | `feature/deployment-thirteenth` | ✅ 完成 |
 | 6.7 | 部署文件 | `feature/deployment-thirteenth` | ✅ 完成 |
-| 6.8 | 進階擴展規劃 | `feature/deployment-thirteenth` | ✅ 完成（見註 3）|
+| 6.8 | 進階擴展規劃 | `feature/deployment-thirteenth` | ✅ 完成（見註 2）|
 
-> **驗證日期**：2026-07-16（Docker build + 容器 health 端點實測通過、備份腳本端到端通過、ruff lint 全綠）
+> **驗證日期**：2026-07-16（Docker build + 容器 health 端點實測通過、備份腳本端到端通過、dev/production 雙模式行為實測通過、ruff lint 全綠）
+>
+> **Task 6.3 實作內容**：`config.py` 新增 `environment` 欄位與 `is_production` property；生產環境（`ENVIRONMENT=production`）下自動隱藏敏感資訊——關閉 `/docs`、`/redoc`、`/openapi.json`（回 404），`/api/v1/stats` 不回傳 `database_path`，啟動訊息遮蔽 DB 路徑。已於兩種模式實測驗證。
 >
 > **實作偏差註記**：
-> 1. **Task 6.3 部分完成**：`.env.production.example` 已建立，但 `packages/server/config.py` 尚未加入 `environment` / `is_production` 屬性。Dockerfile 雖設定 `ENV ENVIRONMENT=production`，但 `config.py` 為 `extra="ignore"` 會忽略此變數，生產環境敏感資訊隱藏邏輯尚未實作。
-> 2. **Task 6.5 位置偏差**：health 端點實作於 `packages/server/main.py`（`/api/v1/health`、`/health/ready`、`/health/live`），非計畫的獨立 `api/health.py`；功能已驗證正常。
-> 3. **Task 6.8 位置偏差**：`deploy/docker-compose.yml`、`docker-compose.prod.yml`、`deploy/terraform/` 均完成；原規劃的 `docs/SCALING.md` 內容改寫至 `.speckit/tasks/phase-7-tasks.md`（Phase 7 選用方案）。
+> 1. **Task 6.5 位置偏差**：health 端點實作於 `packages/server/main.py`（`/api/v1/health`、`/health/ready`、`/health/live`），非計畫的獨立 `api/health.py`；功能已驗證正常。
+> 2. **Task 6.8 位置偏差**：`deploy/docker-compose.yml`、`docker-compose.prod.yml`、`deploy/terraform/` 均完成；原規劃的 `docs/SCALING.md` 內容改寫至 `.speckit/tasks/phase-7-tasks.md`（Phase 7 選用方案）。
 
 ---
 
@@ -510,7 +511,7 @@ Phase 7（選項）：
 ✅ 備份機制可用（端到端實測通過）
 ✅ 部署文件完整
 ✅ 進階方案規劃完成（Phase 7）
-⚠️ 生產環境變數隱藏邏輯（config.py）待補 — 見狀態表註 1
+✅ 生產環境變數隱藏邏輯（config.py is_production）已實作並驗證
 ```
 
 ---

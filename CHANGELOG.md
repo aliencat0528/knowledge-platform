@@ -13,6 +13,7 @@
   - `deploy/` - Docker Compose（dev/prod）、Caddyfile、Terraform 規劃
   - `.github/workflows/build.yml`、`deploy.yml` - CI/CD Pipeline
   - `docs/DEPLOYMENT.md` - 部署指南
+  - 生產環境安全強化：`config.py` 新增 `is_production`，`ENVIRONMENT=production` 時關閉 `/docs`、`/redoc`、`/openapi.json` 並隱藏 `database_path` 等敏感資訊
 - 資料備份與還原功能
   - `scripts/backup.py` - 備份 SQLite 和 ChromaDB 到 .tar.gz
   - `scripts/restore.py` - 從備份還原資料
