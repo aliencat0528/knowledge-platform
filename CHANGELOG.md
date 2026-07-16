@@ -6,6 +6,13 @@
 ## [Unreleased]
 
 ### Added
+- Phase 6 部署基礎設施
+  - `zeabur.json` - Zeabur 服務設定檔
+  - `packages/server/Dockerfile`、`packages/web-ui/Dockerfile` - 多階段容器建置
+  - `.dockerignore`、`.env.production.example` - 生產環境設定
+  - `deploy/` - Docker Compose（dev/prod）、Caddyfile、Terraform 規劃
+  - `.github/workflows/build.yml`、`deploy.yml` - CI/CD Pipeline
+  - `docs/DEPLOYMENT.md` - 部署指南
 - 資料備份與還原功能
   - `scripts/backup.py` - 備份 SQLite 和 ChromaDB 到 .tar.gz
   - `scripts/restore.py` - 從備份還原資料

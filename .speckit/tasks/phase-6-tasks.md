@@ -8,14 +8,21 @@
 
 | Task | 功能 | 分支 | 狀態 |
 |------|------|------|------|
-| 6.1 | Zeabur 專案設定 | `feature/deployment-thirteenth` | 📋 待開始 |
-| 6.2 | Dockerfile 撰寫 | `feature/deployment-thirteenth` | 📋 待開始 |
-| 6.3 | 環境變數管理 | `feature/deployment-thirteenth` | 📋 待開始 |
-| 6.4 | CI/CD Pipeline | `feature/deployment-thirteenth` | 📋 待開始 |
-| 6.5 | 健康檢查與監控 | `feature/deployment-thirteenth` | 📋 待開始 |
-| 6.6 | 資料備份機制 | `feature/deployment-thirteenth` | 📋 待開始 |
-| 6.7 | 部署文件 | `feature/deployment-thirteenth` | 📋 待開始 |
-| 6.8 | 進階擴展規劃 | `feature/deployment-thirteenth` | 📋 待開始 |
+| 6.1 | Zeabur 專案設定 | `feature/deployment-thirteenth` | ✅ 完成 |
+| 6.2 | Dockerfile 撰寫 | `feature/deployment-thirteenth` | ✅ 完成 |
+| 6.3 | 環境變數管理 | `feature/deployment-thirteenth` | ⚠️ 部分（見註 1）|
+| 6.4 | CI/CD Pipeline | `feature/deployment-thirteenth` | ✅ 完成 |
+| 6.5 | 健康檢查與監控 | `feature/deployment-thirteenth` | ✅ 完成（見註 2）|
+| 6.6 | 資料備份機制 | `feature/deployment-thirteenth` | ✅ 完成 |
+| 6.7 | 部署文件 | `feature/deployment-thirteenth` | ✅ 完成 |
+| 6.8 | 進階擴展規劃 | `feature/deployment-thirteenth` | ✅ 完成（見註 3）|
+
+> **驗證日期**：2026-07-16（Docker build + 容器 health 端點實測通過、備份腳本端到端通過、ruff lint 全綠）
+>
+> **實作偏差註記**：
+> 1. **Task 6.3 部分完成**：`.env.production.example` 已建立，但 `packages/server/config.py` 尚未加入 `environment` / `is_production` 屬性。Dockerfile 雖設定 `ENV ENVIRONMENT=production`，但 `config.py` 為 `extra="ignore"` 會忽略此變數，生產環境敏感資訊隱藏邏輯尚未實作。
+> 2. **Task 6.5 位置偏差**：health 端點實作於 `packages/server/main.py`（`/api/v1/health`、`/health/ready`、`/health/live`），非計畫的獨立 `api/health.py`；功能已驗證正常。
+> 3. **Task 6.8 位置偏差**：`deploy/docker-compose.yml`、`docker-compose.prod.yml`、`deploy/terraform/` 均完成；原規劃的 `docs/SCALING.md` 內容改寫至 `.speckit/tasks/phase-7-tasks.md`（Phase 7 選用方案）。
 
 ---
 
@@ -497,12 +504,13 @@ Phase 7（選項）：
 # Phase 6 完成條件
 
 ```
-✅ Zeabur 部署成功
-✅ CI/CD 自動化運作
-✅ 健康檢查正常
-✅ 備份機制可用
+✅ Zeabur 設定檔完成（實際部署待雲端執行）
+✅ CI/CD workflow 完成（實際觸發待 push main 驗證）
+✅ 健康檢查正常（容器實測通過）
+✅ 備份機制可用（端到端實測通過）
 ✅ 部署文件完整
-✅ 進階方案規劃完成
+✅ 進階方案規劃完成（Phase 7）
+⚠️ 生產環境變數隱藏邏輯（config.py）待補 — 見狀態表註 1
 ```
 
 ---
