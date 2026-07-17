@@ -1,0 +1,100 @@
+---
+description: Knowledge Platform 核心規範：專案概述、commit scopes、開發指令、套件安裝原則、全域語言/風格/安全規則
+alwaysApply: true
+---
+
+# Knowledge Platform（核心規範）
+
+> 對應 Claude Code 規則：本專案 `CLAUDE.md` + 根目錄 `CLAUDE.md`（Claude Code 自動載入）。
+> 本 repo 為獨立 git repo，Cursor 單開時讀不到父層規則，故此處內嵌全域核心。
+> 規則有出入時一律以根目錄 `CLAUDE.md` 為準；修改全域規則請先改根目錄再同步回此處。
+
+## 專案概述
+
+個人知識管理平台，整合多種來源的技術文章與筆記
+- **技術棧**：Python FastAPI + SQLite + ChromaDB + Chrome Extension
+- **架構**：Monorepo（packages/）
+
+## Commit Scopes
+
+| Scope | 說明 |
+|-------|------|
+| `server` | Python 後端 |
+| `extension` | Chrome 擴充套件 |
+| `storage` | 資料庫 |
+| `parser` | 內容解析器 |
+| `search` | 搜尋功能 |
+| `chat` | Chat/RAG |
+| `notion` | Notion 同步 |
+| `web-ui` | Web 介面 |
+
+範例：`feat(server): add articles API endpoint`、`refactor(parser): optimize Notion parser`
+
+## 開發指令
+
+```bash
+# 後端
+cd packages/server && uvicorn main:app --reload
+
+# 擴充套件
+cd packages/extension && npm install && npm run dev
+
+# 測試
+pytest tests/
+pytest --cov=packages/server
+
+# 工具腳本
+python scripts/import_zip.py <path-to-zip>
+python scripts/embed_all.py
+```
+
+## 套件安裝原則
+
+| 類型 | 行為 |
+|------|------|
+| 開發工具（uv, ruff, biome, pytest 插件） | 可直接安裝 |
+| 架構性依賴（新 ORM、新框架） | 必須詢問 |
+| 付費/大型依賴（AWS SDK, PyTorch） | 必須詢問 |
+
+## Commit 前必做（在全域清單之上「新增」，不取代）
+
+- [ ] `ruff check` → Python lint
+- [ ] `pytest tests/` → 測試通過
+- [ ] 新增 Phase/模組？→ 更新 `.speckit/constitution.md`、`.speckit/plans/`
+- [ ] 完成 Task？→ 於 `.speckit/tasks/` 標記 ✅
+- [ ] 新增 API endpoint？→ 更新 API 文件
+
+## 專案專屬安全提醒
+
+- 禁止修改 `data/` 目錄的 DB / 向量庫檔案
+- 去重邏輯：`source_type + source_id` 為唯一識別
+- Parser 設計保持可擴展（新 Parser 不影響其他模組）
+
+## 領域知識索引
+
+需要時依索引載入：`.claude/knowledge/index.md`
+
+---
+
+# 繼承的全域核心規則（不可在此覆蓋）
+
+## 語言
+
+所有回應使用**繁體中文**。PR 標題與說明使用**繁體中文**。
+
+## 程式碼風格（全域基準；Python 覆蓋見 `python.mdc`）
+
+- **命名**：變數/函式 `camelCase`、Class/Component `PascalCase`、常數 `UPPER_SNAKE_CASE`
+- **縮排**：2 spaces（Python 4 spaces）、行寬上限 100
+- **引號**：JS/TS 用 single `'`，Python 用 double `"`
+- **非同步**：`async/await` 優先於 `.then()`
+- **Commit 前**：Lint + Build 必須通過（`ruff check` / `npm run lint`）
+- **修改前先讀現有程式碼**，保持與既有風格一致
+
+## 安全規則（不可覆蓋）
+
+- 禁止 commit `.env`、API Keys 等機密檔案（建議用 `.env.example`）
+- 禁止自動 merge 到 `main`，merge 由用戶手動執行
+- 禁止直接 push `main`（v1.0 初始 release 除外）
+- 禁止手動修改 binary / 自動生成資料檔（`.sqlite`, `.db`, ChromaDB, `.json` dumps）
+- 新增重型依賴（TensorFlow, PyTorch, AWS SDK, Stripe SDK）前必須詢問

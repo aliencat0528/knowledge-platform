@@ -1,0 +1,30 @@
+---
+description: 開始任何功能實作、Phase 規劃、架構設計或建立分支前，必須套用此 SDD（規格驅動開發）與 Phase 直線化規則
+alwaysApply: false
+---
+
+# SDD 工作流程與 Phase 直線化開發
+
+## SDD 工作流程（.speckit/）
+
+```
+1. 先讀 .speckit/constitution.md（治理原則）
+2. 查看功能規格 .speckit/specs/
+3. 查看技術計畫 .speckit/plans/
+4. 依任務列表 .speckit/tasks/ 執行
+5. 實作與規格有差異 → 先更新規格再繼續
+```
+
+**核心原則**：
+- **Read Specs First**：未理解規格前不得開始寫程式
+- **Local First**：優先本地資料儲存
+- **去重邏輯**：`source_type + source_id` 為唯一識別
+
+## Phase 直線化開發
+
+- 同 Phase 內分支**可並行**；下一 Phase 必須等該 Phase 所有 PR merge 後才開始
+- **Phase 完成條件**：所有 PR merged + `main` 可正常運行 + 文件更新完成
+- **分支版本號**：`feature/` 使用 Phase 序列（sec → third → ...）；
+  `fix/`、`docs/`、`chore/` 各自獨立，從 `first` 開始
+
+@.speckit/constitution.md

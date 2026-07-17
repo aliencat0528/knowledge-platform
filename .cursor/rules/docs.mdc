@@ -1,0 +1,28 @@
+---
+description: 修改 README / CHANGELOG / docs/ / .speckit/ 文件，或需要 Commit 前文件自查、版本規則時套用
+globs: README.md,CHANGELOG.md,docs/**,.speckit/**
+alwaysApply: false
+---
+
+# 文件維護規範
+
+## Commit 前自查（靜默執行，不需提醒用戶）
+
+- [ ] 新增/修改功能？→ 更新 `README.md`、`CHANGELOG.md`
+- [ ] 新增/刪除檔案或模組？→ 更新 `docs/ARCHITECTURE.md`、README 結構
+- [ ] 修改 API？→ 更新 `docs/API.md`
+- [ ] 新增依賴？→ 更新 `requirements.txt` / `package.json`、`docs/DEPENDENCIES.md`
+- [ ] 完成里程碑？→ 更新 `CHANGELOG.md`
+- [ ] 架構變動？→ 更新 `docs/ARCHITECTURE.md`
+- [ ] 新增 Phase/模組？→ 更新 `.speckit/constitution.md`、`.speckit/plans/`
+- [ ] 完成 Task？→ 於 `.speckit/tasks/` 標記 ✅
+
+## 版本規則
+
+- **Semantic Versioning**：MAJOR（破壞性）/ MINOR（新功能）/ PATCH（bug fix）
+- README 維持 `## 版本歷史`，格式 `### vX.Y.Z (YYYY-MM-DD)`
+- **CHANGELOG**：遵循 Keep a Changelog（Added / Changed / Fixed / Removed）
+
+## 規格文件
+
+實作與 `.speckit/specs/` 有差異時 → **先更新規格再繼續**（見 `speckit.mdc`）。

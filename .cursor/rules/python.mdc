@@ -1,0 +1,25 @@
+---
+description: 撰寫或修改 Python 程式碼時的風格規範（PEP 8 覆蓋全域 camelCase）
+globs: **/*.py,**/*.pyi
+alwaysApply: false
+---
+
+# Python 程式碼風格（覆蓋全域）
+
+> 依根目錄規範，「程式碼風格與格式，含各語言慣例」屬**可覆蓋**項。
+> 根目錄規範以 JS/TS 為主，本專案 Python 部分依 PEP 8 覆蓋如下，其餘沿用全域規範。
+
+```yaml
+functions/variables: snake_case      # 覆蓋全域 camelCase（PEP 8）
+classes: PascalCase                  # 同全域
+constants: UPPER_SNAKE_CASE          # 同全域
+indentation: 4 spaces                # 全域已明訂 Python 例外
+quotes: double "                     # 全域已明訂 Python 例外
+max_line_length: 100                 # 同全域
+formatter/linter: black, ruff
+async: async/await 優先              # 同全域
+```
+
+- **Commit 前必跑**：`ruff check`
+- 型別註記優先（FastAPI / Pydantic 模型需完整標註）
+- **修改前先讀現有程式碼**，保持與既有風格一致

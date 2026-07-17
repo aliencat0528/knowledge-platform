@@ -1,0 +1,86 @@
+---
+description: 執行 git commit / branch 命名 / push / rebase、建立 PR、bug fix 流程、WIP commit、恢復開發時套用
+alwaysApply: false
+---
+
+# Git Workflow 與 PR 規範
+
+## Git Workflow
+
+- **Commit**：每個里程碑或功能單元完成後建立，格式 `<type>(<scope>): <subject>`
+  - Types：`feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- **Branch**：`<type>/<name>-<version>`（各 type 獨立計數）
+
+  | Type | 起始 | 序列 |
+  |------|------|------|
+  | `feature/` | `sec` | sec → third → ...（本專案依 Phase 序列，見 `speckit.mdc`） |
+  | `fix/` | `first` | first → sec → third → ... |
+  | `docs/` | `first` | first → sec → third → ... |
+  | `chore/` | `first` | first → sec → third → ... |
+
+- **自動化流程**：實作 → Auto Commit → Auto Push → Auto PR → **[用戶手動 Merge]**
+- ⚠️ 禁止自動 merge、禁止直接 push `main`
+- **必須暫停確認**：實作偏離計畫 / 需要架構決策 / 遇到錯誤 → 說明並等待確認後再繼續
+
+## PR 規範
+
+- **語言**：標題與說明使用**繁體中文**（不可覆蓋）
+- **標題格式**：`<type>(<scope>): <中文描述>`
+- **生成流程**：`git log main..HEAD --oneline` → `git diff main...HEAD --stat` → 生成繁中標題/摘要/變更清單/測試流程報告
+
+```markdown
+## Summary
+[以繁體中文彙整 commits，說明此 PR 目的]
+
+## Changes
+- 新增 X 功能
+- 修復 Y 問題
+
+## 🧪 測試流程報告
+1. **環境準備 (Setup)**: [啟動指令、環境變數、前置條件]
+2. **執行步驟 (Execution)**: [具體操作]
+3. **預期結果 (Expected)**: [成功時的輸出範例]
+4. **驗證方式 (Verification)**: [SQL 查詢、API 回應、UI 狀態]
+
+## Related Issues
+Closes #[issue-number]
+```
+
+## Bug Fix 流程
+
+1. 確認當前分支有無未 commit 變更（有則先 commit 或 stash）
+2. `git checkout main && git checkout -b fix/<bug-name>-<version>`
+3. 修復 → commit → push → PR
+4. PR merge 後：`git checkout <original-branch> && git rebase main`
+5. 繼續原開發
+
+## 中斷防護與恢復
+
+恢復開發時先確認狀態：
+
+```bash
+git branch --show-current
+git status
+git log --oneline -5
+git stash list
+```
+
+長時間中斷前建立 WIP commit（寧可多一個 WIP commit，不要丟失進度）：
+
+```
+feat(server): WIP - articles API 完成 50%
+
+[WIP] 進行中，下次繼續：完成 embedding 整合
+```
+
+## 手動控制指令
+
+| 指令 | 中文 | 說明 |
+|------|------|------|
+| `pause auto` | `暫停自動化` | 暫停，每步驟需確認 |
+| `resume auto` | `恢復自動化` | 恢復自動流程 |
+| `commit only` | `只做到 commit` | 只 commit，不 push/PR |
+| `create PR` | `發 PR` | 推送 branch + 建立 PR |
+| `skip readme` | `跳過 README 更新` | 跳過本次 README 更新 |
+| `skip docs` | `跳過文件更新` | 跳過 docs/ 更新 |
+| `continue previous` | `繼續上次開發` | 恢復上次進度 |
