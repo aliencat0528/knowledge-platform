@@ -172,7 +172,7 @@ async def liveness_check():
     }
 
 
-@app.get("/api/v1/stats", tags=["System"])
+@app.get("/api/v1/stats", tags=["System"], dependencies=protected)
 async def get_stats():
     """Get system statistics."""
     import os

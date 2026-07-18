@@ -38,3 +38,22 @@ async def test_development_without_key_allows(monkeypatch):
     monkeypatch.setattr(settings, "api_key", None)
     monkeypatch.setattr(settings, "environment", "development")
     assert await verify_api_key(None) is None
+
+
+def test_all_api_routes_require_auth_except_health():
+    """Every /api/v1/* route except health must carry the auth dependency."""
+    from fastapi.routing import APIRoute
+
+    from packages.server.main import app
+
+    unprotected = [
+        route.path
+        for route in app.routes
+        if isinstance(route, APIRoute)
+        and route.path.startswith("/api/v1")
+        and not route.path.startswith("/api/v1/health")
+        and not any(
+            dep.call is verify_api_key for dep in route.dependant.dependencies
+        )
+    ]
+    assert unprotected == []
