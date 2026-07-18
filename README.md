@@ -58,125 +58,49 @@ uvicorn main:app --reload
 # 3. 點擊「載入未封裝項目」
 # 4. 選擇 packages/extension 目錄
 
-# 目前擴充套件為純 JavaScript，無需 build 步驟
-# 直接載入源碼目錄即可
+# 目前擴充套件為純 JavaScript，無需 build 步驟，直接載入源碼目錄即可
 ```
+
+> 完整本地開發流程（前後端、多終端機、選用服務）見 [部署指南](docs/DEPLOYMENT.md#2-本地開發)。
 
 ---
 
 ## 使用方式
 
+以下說明各功能怎麼用；**完整的 API 指令與請求／回應範例集中在 [測試指南](docs/TESTING.md)**，本節只給概念與代表性範例。
+
 ### 收藏網頁
 
 1. 瀏覽任意技術文章
-2. 點擊擴充套件圖示
-3. 點擊「收藏此頁面」
-4. 完成！
+2. 點擊擴充套件圖示 →「收藏此頁面」
+3. 完成。內容自動經 Readability 擷取、去重後入庫
 
 ### 搜尋知識庫
+
+支援關鍵字與語意兩種搜尋（語意搜尋需設定 OpenAI API Key 並先向量化）。
 
 ```bash
 # 關鍵字搜尋
 curl "http://localhost:8000/api/v1/search?q=React+Hooks"
-
-# 語意搜尋（需要設定 OpenAI API Key）
-curl -X POST "http://localhost:8000/api/v1/search/semantic" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "如何在 React 中管理狀態"}'
 ```
 
-### 匯入 Notion Export
+### 匯入與向量化
 
-```bash
-python scripts/import_zip.py path/to/Export.zip
-```
-
-### 向量化文章（語意搜尋）
-
-```bash
-# 設定 OpenAI API Key
-export OPENAI_API_KEY=sk-...
-
-# 預覽要向量化的文章
-python scripts/embed_all.py --preview
-
-# 執行向量化
-python scripts/embed_all.py
-
-# 重新向量化全部（包含已向量化的）
-python scripts/embed_all.py --force
-```
+- **Notion Export**：`python scripts/import_zip.py path/to/Export.zip`
+- **AI 對話**：擴充套件或 `POST /api/v1/import/chat`（支援 Claude Code JSONL、Cursor SQLite、Markdown，自動偵測格式）
+- **向量化**（語意搜尋前置）：`python scripts/embed_all.py`（`--preview` 預覽、`--force` 全部重做）
 
 ### 同步到 Notion
 
-```bash
-# 1. 設定 Notion API（參考下方設定說明）
-export NOTION_API_KEY=secret_...
-export NOTION_DATABASE_ID=...
-
-# 2. 檢查同步狀態
-curl http://localhost:8000/api/v1/sync/status
-
-# 3. 同步單篇文章
-curl -X POST http://localhost:8000/api/v1/sync/notion \
-  -H "Content-Type: application/json" \
-  -d '{"article_id": 1}'
-
-# 4. 批量同步（未同步的文章）
-curl -X POST http://localhost:8000/api/v1/sync/notion/batch \
-  -H "Content-Type: application/json" \
-  -d '{"limit": 10}'
-```
+設定 `NOTION_API_KEY` / `NOTION_DATABASE_ID` 後，可單篇或批量把文章推送到 Notion，並查詢同步狀態。指令見 [測試指南 › Notion 同步](docs/TESTING.md)。
 
 ### 排程爬取
 
-```bash
-# 1. 啟動排程器
-curl -X POST http://localhost:8000/api/v1/scheduler/start
-
-# 2. 建立排程任務（每 6 小時執行一次）
-curl -X POST http://localhost:8000/api/v1/scheduler/tasks \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "抓取技術部落格",
-    "url_pattern": "https://example.com/blog",
-    "cron_expression": "0 */6 * * *"
-  }'
-
-# 3. 列出所有任務
-curl http://localhost:8000/api/v1/scheduler/tasks
-
-# 4. 手動執行任務
-curl -X POST http://localhost:8000/api/v1/scheduler/tasks/1/run
-
-# 5. 查看排程器狀態
-curl http://localhost:8000/api/v1/scheduler/status
-
-# Cron 表達式格式：分 時 日 月 星期幾
-# 範例：
-# - "0 */6 * * *"   每 6 小時
-# - "30 2 * * *"    每天凌晨 2:30
-# - "0 9 * * 1"     每週一早上 9:00
-# - "*/30 * * * *"  每 30 分鐘
-```
+啟動排程器後，用 Cron 表達式建立定期抓取任務（如每 6 小時抓一次指定來源），支援手動執行與狀態查詢。指令與 Cron 格式見 [測試指南 › Scheduler](docs/TESTING.md)。
 
 ### 備份與還原
 
-```bash
-# 建立備份（SQLite + ChromaDB）
-python scripts/backup.py
-
-# 備份到指定目錄
-python scripts/backup.py --output-dir /path/to/backups
-
-# 預覽還原（不實際執行）
-python scripts/restore.py backups/knowledge_backup_xxx.tar.gz --preview
-
-# 執行還原
-python scripts/restore.py backups/knowledge_backup_xxx.tar.gz
-```
-
-詳細說明請參考 [備份與還原指南](docs/BACKUP.md)。
+`python scripts/backup.py` 建立 SQLite + ChromaDB 備份；`python scripts/restore.py <檔>` 還原（`--preview` 預覽）。完整說明見 [備份與還原指南](docs/BACKUP.md)。
 
 ---
 
@@ -195,27 +119,21 @@ knowledge-platform/
 └── tests/                 # 測試
 ```
 
+> 模組職責與資料流見 [架構文件](docs/ARCHITECTURE.md)。
+
 ---
 
 ## 設定
 
-複製 `.env.example` 為 `.env` 並填入必要設定：
+複製 `.env.example` 為 `.env` 並填入設定。最關鍵的幾項：
 
-```bash
-# 基本設定（必要）
-DATABASE_PATH=./data/knowledge.db
-CHROMA_PATH=./data/chroma
+| 變數 | 必要 | 用途 |
+|------|------|------|
+| `DATABASE_PATH` | ✅ | SQLite 路徑（預設 `./data/knowledge.db`） |
+| `OPENAI_API_KEY` | 語意搜尋/Chat 需要 | OpenAI 金鑰 |
+| `API_KEY` | 生產環境需要 | `/api/v1/*` 認證用 |
 
-# OpenAI（語意搜尋 + Chat 需要）
-OPENAI_API_KEY=sk-...
-
-# 自動向量化（新文章匯入時自動產生 embedding）
-AUTO_EMBED=true
-
-# Notion 同步（選用）
-NOTION_API_KEY=secret_...
-NOTION_DATABASE_ID=...
-```
+> **完整環境變數清單（必要／選用／系統／Provider 四類，含「少了會怎樣」）為單一正本，見 [部署指南 › 環境變數說明](docs/DEPLOYMENT.md#5-環境變數說明)。**
 
 ---
 
@@ -223,83 +141,38 @@ NOTION_DATABASE_ID=...
 
 ### Spec-Driven Development
 
-本專案使用 [GitHub Spec Kit](https://github.com/github/spec-kit) 進行規格驅動開發：
+本專案使用 [GitHub Spec Kit](https://github.com/github/spec-kit) 進行規格驅動開發，規格與計畫在 `.speckit/`（`constitution.md` 治理原則、`specs/` 功能規格、`plans/` 技術計畫、`tasks/` 任務列表）。
 
-```bash
-# 查看專案原則
-cat .speckit/constitution.md
-
-# 查看功能規格
-ls .speckit/specs/
-
-# 查看技術計畫
-cat .speckit/plans/technical-plan.md
-
-# 查看任務列表
-cat .speckit/tasks/phase-1-tasks.md
-```
-
-### 執行測試
+### 測試
 
 ```bash
 pytest tests/
 ```
 
+> 完整測試流程、預期結果與整合測試見 [測試指南](docs/TESTING.md)。
+
 ---
 
 ## API 文件
 
-啟動服務後，訪問 http://localhost:8000/docs 查看 Swagger UI。
+啟動服務後訪問 http://localhost:8000/docs 查看 Swagger UI。主要端點分為文章、匯入、搜尋、Notion 同步、Chat、排程、健康檢查等群組。
 
-主要端點：
-- `POST /api/v1/articles` - 新增文章
-- `POST /api/v1/articles/batch` - 批量新增
-- `GET /api/v1/articles` - 列出文章
-- `POST /api/v1/import/zip` - 匯入 Notion Export .zip
-- `POST /api/v1/import/chat` - 匯入 AI 對話
-- `GET /api/v1/search` - 關鍵字搜尋
-- `POST /api/v1/search/semantic` - 語意搜尋
-- `POST /api/v1/sync/notion` - 同步文章到 Notion
-- `POST /api/v1/sync/notion/batch` - 批量同步到 Notion
-- `GET /api/v1/sync/status` - 取得同步狀態
-- `POST /api/v1/chat` - Chat 對話（RAG）
-- `GET /api/v1/chat/history` - 對話歷史列表
-- `GET /api/v1/chat/history/{id}` - 對話詳情
-- `DELETE /api/v1/chat/history/{id}` - 刪除對話
-- `POST /api/v1/scheduler/tasks` - 建立排程任務
-- `GET /api/v1/scheduler/tasks` - 列出排程任務
-- `PUT /api/v1/scheduler/tasks/{id}` - 更新排程任務
-- `DELETE /api/v1/scheduler/tasks/{id}` - 刪除排程任務
-- `POST /api/v1/scheduler/tasks/{id}/run` - 手動執行任務
-- `GET /api/v1/scheduler/status` - 排程器狀態
-- `POST /api/v1/scheduler/start` - 啟動排程器
-- `POST /api/v1/scheduler/stop` - 停止排程器
-- `GET /api/v1/health` - 基本健康檢查
-- `GET /api/v1/health/ready` - Readiness 檢查（驗證 DB 和 ChromaDB）
-- `GET /api/v1/health/live` - Liveness 檢查
-
+> **完整端點清單見 [API 參考](docs/API.md)**；各端點的請求／回應範例見 [測試指南](docs/TESTING.md)。
+>
 > 生產環境（`ENVIRONMENT=production`）會自動關閉 `/docs`、`/redoc`、`/openapi.json` 並隱藏敏感資訊。
 
 ---
 
 ## 部署
 
-支援 Zeabur 一鍵部署與 Docker 自架，完整步驟請參考 [部署指南](docs/DEPLOYMENT.md)。
+推薦 **Zeabur 一鍵部署**（連結 GitHub Repository 後依 `zeabur.json` 自動部署），另支援 Docker Compose 自架。
 
 ```bash
-# 方式一：Zeabur（推薦）
-# 連結 GitHub Repository 後，Zeabur 依 zeabur.json 自動部署
-
-# 方式二：Docker Compose（自架）
+# Docker Compose（自架）
 docker compose -f deploy/docker-compose.prod.yml up -d
-
-# 方式三：單獨建置後端映像
-docker build -f packages/server/Dockerfile -t knowledge-api .
-docker run -p 8000:8000 -v $(pwd)/data:/app/data knowledge-api
 ```
 
-生產環境需設定的環境變數見 [`.env.production.example`](.env.production.example)；
-CI/CD 由 `.github/workflows/`（PR 時建置測試、merge main 時部署）自動執行。
+> 三種部署方式的完整步驟、生產環境變數與 CI/CD 說明見 [部署指南](docs/DEPLOYMENT.md)。
 
 ---
 
@@ -316,76 +189,17 @@ CI/CD 由 `.github/workflows/`（PR 時建置測試、merge main 時部署）自
 
 ## 版本歷史
 
-### v0.4.0 (開發中)
-- **部署與維運功能**
-  - 備份腳本 (`scripts/backup.py`) - 支援 SQLite 和 ChromaDB
-  - 還原腳本 (`scripts/restore.py`) - 含預覽和驗證
-  - 進階 Health Check 端點（ready、live）
-  - 備份/還原文件 (`docs/BACKUP.md`)
-- **排程爬取（Phase 4 進行中）**
-  - 排程服務 (`SchedulerService`) - APScheduler 整合
-  - 排程任務 CRUD API 端點
-  - Cron 表達式支援（分鐘 小時 日 月 星期幾）
-  - 手動執行任務功能
-  - 排程器狀態查詢
-  - URL 自動爬取與儲存
-- **Chat RAG（Phase 4 完成）**
-  - RAG 流程（語意搜尋 + LLM）
-  - Chat 服務 (`ChatService`)
-  - Chat API 端點（`POST /chat`）
-  - 對話歷史管理
-  - 多輪對話支援
-  - 引用來源標註
+各版重點（迭代摘要，逐條變更見 [CHANGELOG.md](CHANGELOG.md)）：
 
-### v0.3.0 (2026-01-27)
-- **Notion 同步（Phase 3 完成）**
-  - Notion 同步服務（建立/更新頁面）
-  - 同步 API 端點（`POST /sync/notion`）
-  - 批量同步支援（`POST /sync/notion/batch`）
-  - 同步狀態查詢（`GET /sync/status`）
-  - Markdown 轉 Notion blocks
-  - 速率限制處理和重試機制
-- **語意搜尋（Phase 3 完成）**
-  - ChromaDB 向量資料庫整合
-  - OpenAI Embedding Service
-  - 語意搜尋 API (`POST /search/semantic`)
-  - 批量向量化腳本 (`scripts/embed_all.py`)
-  - 新文章自動向量化選項
+| 版本 | 重點 |
+|------|------|
+| **v0.4.0**（開發中） | 部署與維運（備份/還原、進階 Health Check）、排程爬取、Chat RAG |
+| **v0.3.0** | 語意搜尋（ChromaDB + Embedding）、Notion 同步 |
+| **v0.2.0** | AI 對話匯入、批量收藏與搜尋、Notion 樹狀抓取、Chrome 擴充套件核心 |
+| **v0.1.0** | 專案初始化（FastAPI 後端、SQLite、去重邏輯、Articles API） |
 
-### v0.2.0 (2026-01-27)
-- **AI 對話匯入（Phase 2 完成）**
-  - Claude Code JSONL 格式匯入
-  - Cursor SQLite 格式匯入
-  - Markdown 格式對話匯入
-  - CLI 自動偵測格式
-- **批量收藏與搜尋**
-  - 擴充套件批量分頁收藏
-  - Notion Export .zip 匯入
-  - 關鍵字搜尋 API
-- **Notion 樹狀抓取（Phase 1b）**
-  - Notion 頁面 HTML 解析
-  - 子頁面掃描與選擇 UI
-  - 樹狀抓取與進度顯示
-  - 樹狀匯入 API（父子關係儲存）
-- **Chrome 擴充套件核心（Phase 1a）**
-  - Manifest V3 設定
-  - Popup UI 與伺服器狀態指示
-  - 內容提取（Readability.js + Turndown.js）
-  - Notion 頁面偵測與 ID 提取
-  - Service Worker 背景服務
-
-### v0.1.0 (2026-01-26)
-- **專案初始化**
-  - Python FastAPI 後端服務
-  - SQLite 資料庫層（含 article_hierarchy）
-  - Pydantic 資料模型
-  - Generic Parser 基礎實作
-  - Import Service（含去重邏輯）
-  - Articles API 端點
-  - Spec Kit 規格文件
-  - 專案文件（README、ARCHITECTURE.md）
-
-> 完整變更記錄請參考 [CHANGELOG.md](CHANGELOG.md)
+> ⚠️ 版本編號待對齊：CHANGELOG 目前將 v0.1.0 之後的變更歸於 `[Unreleased]`，
+> 尚未拆出 v0.2/v0.3/v0.4 標籤。發布前需確認實際 release 標記後同步兩處。
 
 ---
 
