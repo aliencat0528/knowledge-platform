@@ -2,11 +2,12 @@
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
 from .api.articles import router as articles_router
+from .api.auth import verify_api_key
 from .api.chat import router as chat_router
 from .api.errors import (
     general_exception_handler,
@@ -62,26 +63,31 @@ app.add_exception_handler(ValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
 # CORS middleware for extension
+# allow_origins does exact string matching only, so wildcard entries like
+# "chrome-extension://*" never match a real Origin; patterns must go through
+# allow_origin_regex instead.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "chrome-extension://*",
-        "http://localhost:*",
-        "http://127.0.0.1:*",
-    ],
+    allow_origin_regex=(
+        r"^(chrome-extension://.+"
+        r"|https?://localhost(:\d+)?"
+        r"|https?://127\.0\.0\.1(:\d+)?)$"
+    ),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(articles_router, prefix="/api/v1")
-app.include_router(import_router, prefix="/api/v1")
-app.include_router(search_router, prefix="/api/v1")
-app.include_router(sync_router, prefix="/api/v1")
-app.include_router(chat_router, prefix="/api/v1")
-app.include_router(scheduler_router, prefix="/api/v1")
-app.include_router(providers_router)  # Already has /api/v1/providers prefix
+# Include routers (all behind API key auth; health endpoints below stay open)
+protected = [Depends(verify_api_key)]
+app.include_router(articles_router, prefix="/api/v1", dependencies=protected)
+app.include_router(import_router, prefix="/api/v1", dependencies=protected)
+app.include_router(search_router, prefix="/api/v1", dependencies=protected)
+app.include_router(sync_router, prefix="/api/v1", dependencies=protected)
+app.include_router(chat_router, prefix="/api/v1", dependencies=protected)
+app.include_router(scheduler_router, prefix="/api/v1", dependencies=protected)
+# Already has /api/v1/providers prefix
+app.include_router(providers_router, dependencies=protected)
 
 
 @app.get("/api/v1/health", tags=["Health"])
