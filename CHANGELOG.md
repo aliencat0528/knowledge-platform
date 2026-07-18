@@ -56,6 +56,8 @@
   - 版本歷史追蹤規則
 
 ### Fixed
+- `/api/v1/stats` 補上 API 認證：先前認證只套在 router 層，直接定義於 app 的
+  stats 端點被遺漏；新增測試驗證所有 `/api/v1/*`（health 除外）都掛認證
 - CORS 設定改用 `allow_origin_regex`：原 `allow_origins` 的 wildcard 條目
   （`chrome-extension://*` 等）因 Starlette 只做完全比對而從未生效
 - `scripts/restore.py` 解壓備份改用 `filter="data"`，阻擋惡意壓縮檔路徑穿越
