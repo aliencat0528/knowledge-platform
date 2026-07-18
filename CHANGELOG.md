@@ -9,7 +9,11 @@
 - API 認證：所有 `/api/v1/*` 端點（health 除外）要求 `X-API-Key` header
   - `API_KEY` 已設定 → 驗證（timing-safe 比對）；production 未設定 → fail closed（503）；development 未設定 → 放行
   - `.env.example`、`.env.production.example` 新增 `API_KEY` 說明
-
+- 自動化測試套件（本專案首次導入測試）
+  - `tests/test_import_dedup.py` - 去重不變式 23 項測試：content hash、
+    NEW/SKIPPED/UPDATED 三態、版本遞增與 history、identity scope、批次匯入、輸入驗證
+  - `tests/conftest.py` - 每個測試獨立的暫存 SQLite fixture（不觸及 `./data/knowledge.db`）
+  - 涵蓋核心不變式：`source_type + source_id` 為唯一識別
 - Phase 6 部署基礎設施
   - `zeabur.json` - Zeabur 服務設定檔
   - `packages/server/Dockerfile`、`packages/web-ui/Dockerfile` - 多階段容器建置
