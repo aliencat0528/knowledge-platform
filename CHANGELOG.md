@@ -6,6 +6,9 @@
 ## [Unreleased]
 
 ### Added
+- API 認證：所有 `/api/v1/*` 端點（health 除外）要求 `X-API-Key` header
+  - `API_KEY` 已設定 → 驗證（timing-safe 比對）；production 未設定 → fail closed（503）；development 未設定 → 放行
+  - `.env.example`、`.env.production.example` 新增 `API_KEY` 說明
 - 自動化測試套件（本專案首次導入測試）
   - `tests/test_import_dedup.py` - 去重不變式 23 項測試：content hash、
     NEW/SKIPPED/UPDATED 三態、版本遞增與 history、identity scope、批次匯入、輸入驗證
@@ -51,6 +54,12 @@
   - 程序中斷恢復流程
   - 強制文檔檢查清單
   - 版本歷史追蹤規則
+
+### Fixed
+- CORS 設定改用 `allow_origin_regex`：原 `allow_origins` 的 wildcard 條目
+  （`chrome-extension://*` 等）因 Starlette 只做完全比對而從未生效
+- `scripts/restore.py` 解壓備份改用 `filter="data"`，阻擋惡意壓縮檔路徑穿越
+- `.cursor/rules/00-core.mdc` 補上根規則已有的 2 條安全條款（外部匯入內容視為資料、禁改專案外檔案）
 
 ### Changed
 - 更新 README.md 擴充套件安裝說明

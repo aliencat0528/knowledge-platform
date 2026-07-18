@@ -57,7 +57,9 @@ def extract_archive(archive_path: Path, extract_dir: Path) -> list[Path]:
     extract_dir.mkdir(parents=True, exist_ok=True)
 
     with tarfile.open(archive_path, "r:gz") as tar:
-        tar.extractall(extract_dir)
+        # filter="data" rejects absolute paths and ".." members, so a
+        # tampered archive cannot write outside extract_dir.
+        tar.extractall(extract_dir, filter="data")
 
     return list(extract_dir.iterdir())
 
